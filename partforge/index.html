@@ -43,16 +43,16 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 
 <section id="page-image" class="page"><div class="wrap">
 <div class="grid2">
-<div class="panel"><span class="eyebrow">IMAGEN → 3D</span><h2>Reconstrucción local</h2><p class="small">Para formas complejas, las 4 vistas reducen ambigüedad. La reconstrucción local no puede inventar partes que ninguna fotografía muestra.</p>
+<div class="panel"><span class="eyebrow">IMAGEN → 3D</span><h2>Reconstrucción 3D neural local</h2><p class="small">Usa un modelo 3D neuronal ejecutado directamente en tu GPU mediante WebGPU. Tus fotos no se suben a ningún servicio. La primera generación descarga el motor local (≈485 MB) y después queda en caché del navegador.</p>
 <div class="views" id="views"></div>
-<div class="row" style="margin-top:12px"><button class="secondary" id="addImages" data-tip="Añade hasta cuatro fotografías del mismo objeto">＋ Añadir vistas</button><button class="ghost" id="clearImages">Limpiar</button><input id="imageInput" type="file" accept="image/*" multiple hidden></div>
+<div class="row" style="margin-top:12px"><button class="secondary" id="addImages" data-tip="Añade hasta cuatro fotografías del mismo objeto">＋ Añadir vistas</button><button class="ghost" id="clearImages">Limpiar</button><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>
 </div>
 <div class="panel"><h3>Configuración</h3>
 <div class="field"><label>Modo de color</label><div class="choiceRow"><button class="choice active" data-mode="single">Una pieza / un color</button><button class="choice" data-mode="multi">Multicolor / varias piezas</button></div></div>
-<div class="field"><label>Resolución local</label><select id="quality"><option value="normal">Normal</option><option value="high">Alta</option><option value="ultra">Ultra</option></select></div>
+<div class="field"><label>Calidad del modelo neural</label><select id="quality"><option value="normal">Normal · 96³</option><option value="high" selected>Alta · 112³</option><option value="ultra">Ultra · 128³</option></select></div><div class="panel" style="margin-top:10px;padding:11px"><span class="small"><b>Motor:</b> TripoSR WebGPU local · sin API · sin créditos · sin subida de imágenes.</span></div>
 <div class="field"><label>Altura aproximada (mm)</label><input id="heightMm" type="number" min="5" max="300" value="50"></div>
 <div id="multiBox" class="hidden"><div class="field"><label>Máximo de colores</label><select id="maxColors"><option>3</option><option selected>4</option><option>6</option><option>8</option></select></div><div class="row"><button class="secondary" id="analyze">Analizar colores</button><button class="ghost" id="addColor">＋ Color</button></div><div id="palette" class="palette" style="margin-top:9px"></div></div>
-<button class="primary full" id="generate" data-tip="Construye el volumen 3D localmente sin enviar imágenes a ningún servicio">Crear modelo 3D</button>
+<button class="primary full" id="generate" data-tip="Ejecuta el modelo neural 3D directamente en tu GPU mediante WebGPU">Crear modelo 3D neural</button>
 </div></div>
 <div class="panel" style="margin-top:18px"><h3>Resultado</h3><div id="genInfo" class="small">Aún no se ha creado un modelo.</div><div class="row" style="margin-top:10px"><button class="primary" id="openGenerated">Abrir en editor</button><button class="secondary" id="saveGenerated">Guardar archivo</button></div></div>
 </div></section>
@@ -110,6 +110,6 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 <div id="donateModal" class="modal hidden"><div class="modalCard"><div class="modalHead"><h3>Apoyar PartForge 3D</h3><button class="close" data-close="donateModal">×</button></div><div class="donate">El proyecto es gratuito. Puedes apoyar de forma voluntaria. El botón de donación se puede conectar después a la cuenta o enlace que tú elijas.</div></div></div>
 <div id="bootError" class="modal hidden"><div class="modalCard"><h3>PartForge no terminó de cargar</h3><p class="small" id="bootText">Revisa la consola del navegador.</p><button class="secondary" onclick="location.reload()">Recargar</button></div></div>
 <div id="tip" class="tooltip"></div><div class="status"><span id="statusText">Listo.</span><span id="statusProgress"></span></div>
-<script type="module" src="./free.js?v=local-v10"></script>
+<script type="module" src="./free.js?v=local-v11"></script>
 </body>
 </html>
