@@ -46,12 +46,24 @@ try {
   await page.locator("#views img").waitFor({state:"visible", timeout:5000});
   await page.waitForTimeout(200);
   const hasWebGPU = await page.evaluate(() => !!navigator.gpu);
+  await page.locator("#quality").selectOption("normal");
   await page.locator("#generate").click();
-  await page.waitForTimeout(hasWebGPU ? 4000 : 1200);
-  const genInfo = await page.locator("#genInfo").textContent();
   if (hasWebGPU) {
-    if (!genInfo.includes("Modelo neural creado localmente")) { const status = await page.locator("#statusText").textContent(); const progress = await page.locator("#progressMsg").textContent(); const imgCount = await page.locator("#views img").count(); throw new Error("El motor neural WebGPU no produjo un modelo: genInfo=" + genInfo + " status=" + status + " progress=" + progress + " imgs=" + imgCount + " errors=" + JSON.stringify(errors)); }
+    await page.waitForFunction(() => {
+      const t=document.querySelector("#genInfo")?.textContent||"";
+      const s=document.querySelector("#statusText")?.textContent||"";
+      const p=document.querySelector("#progressMsg")?.textContent||"";
+      return t.includes("Modelo neural creado localmente") || /No se pudo ejecutar|Error/i.test(t+s+p);
+    }, {timeout:300000});
+    const genInfo=await page.locator("#genInfo").textContent();
+    const status=await page.locator("#statusText").textContent();
+    const progress=await page.locator("#progressMsg").textContent();
+    if (!genInfo.includes("Modelo neural creado localmente")) {
+      throw new Error("El motor neural WebGPU falló durante la inferencia: genInfo=" + genInfo + " status=" + status + " progress=" + progress + " errors=" + JSON.stringify(errors));
+    }
   } else {
+    await page.waitForTimeout(1200);
+    const genInfo = await page.locator("#genInfo").textContent();
     const status = await page.locator("#statusText").textContent();
     if (!/WebGPU|GPU|motor neural/i.test(genInfo + " " + status)) throw new Error("Sin WebGPU, PartForge no mostró un diagnóstico claro del motor neural.");
   }
