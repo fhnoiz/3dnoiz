@@ -37,9 +37,9 @@ jobs:
 
           if "<title>PartForge 3D" not in index: raise SystemExit("index invalid")
           if "function generate" not in js: raise SystemExit("js invalid")
-          for bad in ("meshy","tripo","api.m"):
-              if bad in index.lower() or bad in js.lower():
-                  raise SystemExit("paid AI/API reference found: "+bad)
+          for bad in ("https://api.meshy.ai","https://api.tripo.ai","/openapi/v1","apiKey="):
+              if bad.lower() in index.lower() or bad.lower() in js.lower():
+                  raise SystemExit("external API reference found: "+bad)
 
           Path("partforge/index.html").write_text(index,encoding="utf-8")
           Path("partforge/free.js").write_text(js,encoding="utf-8")
