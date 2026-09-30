@@ -43,7 +43,7 @@ async function generate(){
     });
     S.generated=[d];
     $("progressBar").style.width="100%";
-    $("genInfo").textContent="Modelo neural creado localmente · "+d.engine+" · "+d.positions.length/3|0+" vértices.";
+    $("genInfo").textContent="Modelo neural creado localmente · "+d.engine+" · "+Math.floor(d.positions.length/3).toLocaleString("es-CL")+" vértices.";
     modal("progressModal",false);
     toast("Modelo 3D neural creado en tu equipo, sin API ni IA de pago.");
   }catch(err){
