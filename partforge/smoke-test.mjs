@@ -43,6 +43,8 @@ try {
 
   await page.getByRole("button", {name:"Imagen → 3D"}).click();
   await page.locator("#imageInput").setInputFiles("/tmp/test-object.svg");
+  await page.locator("#views img").waitFor({state:"visible", timeout:5000});
+  await page.waitForTimeout(200);
   await page.locator("#generate").click();
   const genInfo = await page.locator("#genInfo").textContent();
   if (!genInfo.includes("Modelo local creado")) throw new Error("La generación local no produjo un modelo: " + genInfo);
