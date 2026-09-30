@@ -1,0 +1,82 @@
+name: Repair PartForge Local Build
+on:
+  push:
+    paths:
+      - ".github/workflows/assemble-partforge-local.yml"
+      - "partforge/_build/READY"
+      - ".github/workflows/repair-partforge.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract generated files from staged workflow
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json
+
+          source = Path(".github/workflows/assemble-partforge-local.yml").read_text(encoding="utf-8")
+
+          def extract(name):
+              start = "cat > partforge/" + name + " <<'EOF_" + name.split(".")[0].upper() + "'"
+              marker = "EOF_" + name.split(".")[0].upper()
+              i = source.find(start)
+              if i < 0:
+                  raise SystemExit("No se encontró el bloque " + name)
+              i = source.find("\n", i) + 1
+              j = source.find("\n" + marker, i)
+              if j < 0:
+                  raise SystemExit("No se encontró el cierre " + name)
+              return source[i:j] + "\n"
+
+          index = extract("index.html")
+          js = extract("free.js")
+
+          # Basic integrity checks before publishing.
+          if "<title>PartForge 3D" not in index:
+              raise SystemExit("index.html inválido")
+          if "mesh" not in js.lower() or "function generate" not in js:
+              raise SystemExit("free.js inválido")
+          if "api.m" in index.lower() or "meshy" in index.lower() or "tripo" in index.lower():
+              raise SystemExit("index aún contiene un proveedor de IA")
+          if "api.m" in js.lower() or "meshy" in js.lower() or "tripo" in js.lower():
+              raise SystemExit("free.js aún contiene un proveedor de IA")
+
+          Path("partforge/index.html").write_text(index, encoding="utf-8")
+          Path("partforge/free.js").write_text(js, encoding="utf-8")
+
+          Path("partforge/manifest.json").write_text(json.dumps({
+              "name":"PartForge 3D Local Free",
+              "short_name":"PartForge",
+              "start_url":"./index.html",
+              "display":"standalone",
+              "background_color":"#070a10",
+              "theme_color":"#8d72ff",
+              "lang":"es-CL"
+          }, ensure_ascii=False, indent=2), encoding="utf-8")
+
+          Path("partforge/README.md").write_text(
+              "# PartForge 3D — Local Free\n\n"
+              "Aplicación gratuita para creación y edición 3D local. "
+              "No usa Meshy, Tripo, créditos de IA ni API keys.\n\n"
+              "La reconstrucción Imagen → 3D es procedural/local y depende de las vistas disponibles. "
+              "El editor 3D y las exportaciones se realizan en el navegador.\n",
+              encoding="utf-8"
+          )
+          PY
+          rm -f partforge/app.js
+          rm -rf partforge/_build
+      - name: Publish
+        shell: bash
+        run: |
+          git config user.name "PartForge Local Builder"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A partforge .github/workflows/assemble-partforge-local.yml .github/workflows/repair-partforge.yml
+          git commit -m "Publish PartForge Local Free" || exit 0
+          git push
