@@ -1,142 +1,226 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#090b10">
-<meta name="description" content="PartForge 3D — separa modelos 3D, crea encajes y prepara piezas para impresión 3D.">
-<link rel="manifest" href="./manifest.json">
-<title>PartForge 3D</title>
-<style>:root{--bg:#07090d;--panel:#0e1117;--panel2:#121722;--line:#222936;--text:#eef2f8;--muted:#8792a4;--accent:#7c5cff;--accent2:#4f7cff;--good:#31d29a;--danger:#ff5f6d;--shadow:0 18px 55px rgba(0,0,0,.35)}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit}.topbar{height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(10,12,17,.92);backdrop-filter:blur(18px);position:relative;z-index:20}.brand{display:flex;align-items:center;gap:11px}.brandMark{width:35px;height:35px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:12px;font-weight:900;letter-spacing:.5px}.brandName{font-weight:850;letter-spacing:-.5px}.brandName span{color:#9e91ff}.brandSub{font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:2px}.topActions{display:flex;gap:8px}.primary,.secondary,.ghost,.danger,.iconBtn{border:1px solid var(--line);background:#11161f;border-radius:10px;height:38px;padding:0 13px;font-weight:700;font-size:12px}.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent),#5b75ff)}.secondary:hover,.ghost:hover,.iconBtn:hover{border-color:#3a4454;background:#171d27}.danger{border-color:rgba(255,95,109,.3);background:rgba(255,95,109,.08);color:#ff8993}.wide{width:100%}.big{height:44px;padding:0 20px}.workspace{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;height:calc(100vh - 105px)}.panel{background:var(--panel);overflow:auto}.leftPanel{border-right:1px solid var(--line)}.rightPanel{border-left:1px solid var(--line)}.viewerPanel{position:relative;background:#090c11;min-width:0}.viewerToolbar{height:46px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(10,12,17,.74);position:absolute;left:0;right:0;top:0;z-index:5}.modelMeta,.viewerActions{display:flex;align-items:center;gap:8px}.modelMeta{font-size:12px;font-weight:750}.muted{color:var(--muted);font-weight:500}.statusDot{width:7px;height:7px;border-radius:50%;background:#555f6f}.statusDot.good{background:var(--good);box-shadow:0 0 0 4px rgba(49,210,154,.08)}.iconBtn{width:34px;padding:0;display:grid;place-items:center;background:#0f141c}.viewerPanel #viewport{position:absolute;inset:0}.viewerHud{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;pointer-events:none}.hudPill{background:rgba(8,10,14,.8);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:7px 10px;color:#a9b2c2;font-size:10px;backdrop-filter:blur(8px)}.emptyState{position:absolute;inset:46px 0 0;display:grid;place-items:center;align-content:center;gap:10px;pointer-events:none}.emptyState>*{pointer-events:auto}.emptyGlyph{font-size:48px;color:#737cff;opacity:.8}.emptyTitle{font-size:20px;font-weight:850}.emptySub{color:var(--muted);font-size:12px}.dropZone{position:fixed;inset:80px 250px 45px 250px;display:none;z-index:30;background:rgba(124,92,255,.06);border:1px dashed rgba(124,92,255,.6);border-radius:20px;place-items:center;align-content:center;gap:9px;backdrop-filter:blur(12px)}.dropZone.show{display:grid}.dropIcon{width:54px;height:54px;border-radius:16px;background:rgba(124,92,255,.15);display:grid;place-items:center;color:#a59bff;font-size:30px}.dropTitle{font-size:22px;font-weight:850}.dropSub,.dropHint{font-size:12px;color:var(--muted)}.dropHint{opacity:.8}.panelHeader{padding:16px 15px 12px;display:flex;justify-content:space-between;align-items:flex-start}.panelEyebrow,.miniTitle{font-size:9px;letter-spacing:1.7px;color:#657083;font-weight:800}.panelTitle{font-size:16px;font-weight:850;margin-top:2px}.badge{padding:4px 7px;border-radius:8px;background:#171d27;color:#9ea8b8;font-size:10px}.toolGroup{display:grid;gap:7px;padding:0 10px}.tool{display:grid;grid-template-columns:27px 1fr;grid-template-rows:auto auto;column-gap:5px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;border-radius:11px;padding:9px 9px}.tool>span{grid-row:1/3;align-self:center;color:#808b9b;font-size:17px}.tool b{font-size:12px}.tool small{font-size:10px;color:var(--muted)}.tool:hover,.tool.active{background:#151b24;border-color:#252d3a}.tool.active>span{color:#a193ff}.divider{height:1px;background:var(--line);margin:14px 0}.miniSection{padding:0 12px}.miniTitle{margin-bottom:9px}.subtle{font-size:10px;color:var(--muted);line-height:1.45;margin-bottom:9px}.field{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:7px 0;font-size:10px;color:#aab4c4}.field input,.field select{width:100%;background:#0a0e14;border:1px solid #222a36;color:#e9eef5;border-radius:8px;height:30px;padding:0 8px;outline:none}.field input[type=checkbox]{width:15px;height:15px}.field input[type=range]{padding:0}.field output{color:#b9c1d0;font-size:10px;min-width:30px;text-align:right}.buttonRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0}.selectionStats{background:#0a0e14;border:1px solid #202734;border-radius:9px;padding:8px;font-size:10px;color:#98a3b4;line-height:1.45;min-height:36px}.tipBox{margin:14px 12px;padding:10px 11px;border-radius:10px;background:rgba(124,92,255,.07);border:1px solid rgba(124,92,255,.14);font-size:10px;line-height:1.5;color:#9da7b6}.partList{padding:0 10px;display:grid;gap:6px}.partItem{border:1px solid #202734;background:#0a0e14;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:8px}.partItem.active{border-color:#6256bb;background:rgba(124,92,255,.08)}.partSwatch{width:10px;height:10px;border-radius:3px;background:#9ba6b6;flex:none}.partLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.partMeta{margin-left:auto;color:#677286;font-size:9px}.emptyList{padding:10px;color:#687386;font-size:11px;line-height:1.5}.exportGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}.statusbar{height:39px;background:#0a0d12;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:#6e798a;font-size:10px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:50;display:grid;place-items:center;backdrop-filter:blur(5px)}.modal.hidden{display:none}.modalCard{width:min(720px,92vw);max-height:88vh;overflow:auto;border:1px solid #303744;background:#0f131b;border-radius:16px;box-shadow:var(--shadow)}.modalHeader{display:flex;justify-content:space-between;align-items:flex-start;padding:15px 16px;border-bottom:1px solid var(--line)}.modalBody{padding:16px}.notice{padding:12px;border-radius:10px;background:#101621;border:1px solid #222b39;font-size:11px;line-height:1.55;color:#a6afbf}.kbd{padding:2px 5px;border-radius:5px;background:#171d27;border:1px solid #293141;color:#d7deea;font-size:10px}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.metric{background:#0a0e14;border:1px solid #202734;border-radius:10px;padding:10px}.metric b{display:block;font-size:14px}.metric span{font-size:9px;color:#677286}.dropActive{border-color:#9b90ff!important;background:rgba(124,92,255,.12)!important}@media(max-width:1100px){.workspace{grid-template-columns:215px minmax(0,1fr) 250px}}@media(max-width:880px){body{overflow:auto}.workspace{height:auto;grid-template-columns:1fr;min-height:calc(100vh - 105px)}.leftPanel,.rightPanel{display:none}.viewerPanel{height:calc(100vh - 105px);min-height:560px}.dropZone{inset:80px 16px 45px 16px}.topActions .ghost{display:none}}</style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07090e">
+  <meta name="description" content="PartForge 3D — Imagen a 3D, multicolor, separación inteligente, encajes y exportación para impresión 3D.">
+  <link rel="manifest" href="./manifest.json">
+  <title>PartForge 3D</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+      "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.15/build/index.module.js",
+      "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js",
+      "fflate": "https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js"
+    }
+  }
+  </script>
 </head>
 <body>
 <div id="app">
-<header class="topbar">
-<div class="brand"><div class="brandMark">PF</div><div><div class="brandName">PartForge <span>3D</span></div><div class="brandSub">MODEL → PARTS → PRINT</div></div></div>
-<div class="topActions">
-<button class="ghost" id="btnNew">Nuevo</button>
-<button class="ghost" id="btnSaveProject">Guardar proyecto</button>
-<button class="ghost" id="btnAI">IA 3D</button>
-<button class="primary" id="btnExport">Exportar</button>
+  <header class="topbar">
+    <button class="brand" data-page="home" data-tip="Volver al inicio de PartForge 3D">
+      <span class="logoBox">PF</span>
+      <span class="brandText"><b>PartForge <em>3D</em></b><small>IMAGE → 3D → PARTS → PRINT</small></span>
+    </button>
+    <nav class="topNav" aria-label="Navegación">
+      <button data-page="home" data-tip="Página inicial con todos los flujos">Inicio</button>
+      <button data-page="image3d" data-tip="Crear un modelo 3D desde una o varias imágenes">Imagen → 3D</button>
+      <button data-page="editor" data-tip="Editar, seleccionar y separar cualquier parte de un modelo 3D">Editor 3D</button>
+    </nav>
+    <div class="topActions">
+      <button class="ghost" id="btnApi" data-tip="Configura el proveedor de IA y tu clave localmente">IA / API</button>
+      <button class="primary" id="btnGlobalLoad" data-tip="Carga un modelo 3D existente para editarlo">Cargar 3D</button>
+    </div>
+  </header>
+
+  <main id="pageHome" class="page activePage">
+    <section class="hero">
+      <div class="heroCopy">
+        <span class="eyebrow">3D PRINT WORKSTATION</span>
+        <h1>De una imagen o un modelo<br><span>a piezas listas para imprimir.</span></h1>
+        <p>Genera modelos con varias vistas, prepara multicolor, separa regiones con herramientas inteligentes y crea uniones que encajen.</p>
+        <div class="heroActions">
+          <button class="primary big" data-page="image3d">Crear 3D desde imágenes</button>
+          <button class="secondary big" data-page="editor">Abrir editor 3D</button>
+        </div>
+        <div class="trustRow"><span>● Procesamiento 3D local</span><span>● Multi-vista 1–4 fotos</span><span>● STL · OBJ · GLB · 3MF</span><span>● Tooltips en funciones clave</span></div>
+      </div>
+      <div class="heroVisual">
+        <div class="heroOrb"></div>
+        <div class="heroCard cardA"><span>01</span><b>IMAGEN</b><small>1–4 vistas</small></div>
+        <div class="heroCard cardB"><span>02</span><b>SEGMENTA</b><small>piezas / color</small></div>
+        <div class="heroCard cardC"><span>03</span><b>ENSAMBLA</b><small>pines / encajes</small></div>
+        <div class="heroWire"></div>
+      </div>
+    </section>
+    <section class="featureGrid">
+      <button class="featureCard" data-page="image3d" data-tip="Sube hasta 4 vistas del mismo objeto para mejorar la geometría">
+        <span class="featureIcon">✦</span><b>Imagen → 3D</b><p>Usa 1–4 imágenes y selecciona resolución, textura y modo.</p><strong>Multi-vista</strong>
+      </button>
+      <button class="featureCard" data-page="image3d" data-mode="multicolor" data-tip="Genera y separa automáticamente por regiones de color">
+        <span class="featureIcon">◈</span><b>Multicolor</b><p>Extrae regiones de color y prepara las piezas para multihilo/multifilamento.</p><strong>Por color</strong>
+      </button>
+      <button class="featureCard" data-page="editor" data-tip="Pinta, laza o sigue un trazo para seleccionar cualquier zona">
+        <span class="featureIcon">⌁</span><b>Separación precisa</b><p>Pincel, lazo, trazo guiado, región conectada y selección por color.</p><strong>Smart Detach</strong>
+      </button>
+      <button class="featureCard" data-page="editor" data-tip="Crea uniones macho/hembra y verifica la malla antes de imprimir">
+        <span class="featureIcon">⛓</span><b>Encajes</b><p>Pines, sockets, imanes y conectores AI con tolerancia configurable.</p><strong>Print-ready</strong>
+      </button>
+    </section>
+  </main>
+
+  <main id="pageImage3d" class="page">
+    <section class="wizardShell">
+      <div class="wizardHeader">
+        <div><span class="eyebrow">IMAGE TO 3D STUDIO</span><h2>Crea tu modelo 3D con más información, no con una sola foto.</h2></div>
+        <div class="stepper"><span class="done">1 Imágenes</span><i></i><span>2 Estilo</span><i></i><span>3 Generar</span><i></i><span>4 Preparar</span></div>
+      </div>
+      <div class="wizardGrid">
+        <section class="wizardMain">
+          <div class="sectionCard">
+            <div class="sectionTitle"><div><span class="eyebrow">PASO 1</span><h3>Vistas del objeto</h3></div><span id="imageCount" class="countBadge">0 / 4</span></div>
+            <p class="helper">Puedes subir 1 a 4 imágenes del mismo objeto. Con varias vistas, la IA tiene más información de la geometría y cobertura de textura.</p>
+            <div id="viewGrid" class="viewGrid"></div>
+            <div class="uploadActions">
+              <button class="secondary" id="btnAddImages" data-tip="Añade hasta 4 fotos del mismo objeto">＋ Añadir imágenes</button>
+              <button class="ghost" id="btnClearImages">Limpiar</button>
+              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+            </div>
+          </div>
+
+          <div class="sectionCard">
+            <div class="sectionTitle"><div><span class="eyebrow">PASO 2</span><h3>Resultado que quieres</h3></div></div>
+            <div class="choiceGrid">
+              <button class="choiceCard selected" data-color-mode="single" data-tip="Genera una sola pieza visualmente uniforme; ideal para un color de filamento"><span>●</span><b>Un solo color</b><small>Una malla limpia y uniforme</small></button>
+              <button class="choiceCard" data-color-mode="multicolor" data-tip="Genera el modelo y luego crea piezas separadas por las regiones de color detectadas"><span>◈</span><b>Multicolor</b><small>Separación automática por color</small></button>
+            </div>
+            <div class="subGrid">
+              <label><span>Calidad geométrica</span><select id="geometryResolution"><option value="standard">Standard</option><option value="2k" selected>Ultra 2K</option></select></label>
+              <label><span>Textura</span><select id="textureMode"><option value="none">Sin textura</option><option value="base" selected>Color / textura</option><option value="pbr">PBR</option></select></label>
+              <label><span>Auto tamaño</span><select id="autoSize"><option value="true" selected>Estimar tamaño</option><option value="false">No</option></select></label>
+              <label><span>Polígonos</span><select id="polycount"><option value="adaptive-high">Adaptativo alto</option><option value="30000" selected>30.000</option><option value="60000">60.000</option><option value="100000">100.000</option></select></label><label><span>Color único</span><input id="singleColor" type="color" value="#b9c3d4"></label><label><span>Color único</span><input id="singleColor" type="color" value="#8b7cff"></label>
+            </div>
+          </div>
+
+          <div id="multicolorCard" class="sectionCard hiddenCard">
+            <div class="sectionTitle"><div><span class="eyebrow">MULTICOLOR</span><h3>Paleta de impresión</h3></div><button class="ghost" id="btnAnalyzePalette" data-tip="Analiza la imagen principal y propone colores para separar">Analizar colores</button></div>
+            <p class="helper">PartForge toma la imagen principal y propone nombres de color para que la IA pueda dividir las regiones. Puedes editar la lista antes de generar. El modo multicolor puede usar una tarea adicional del proveedor de IA.</p>
+            <div id="paletteList" class="paletteList"></div>
+            <div class="paletteControls"><label><span>Máximo de colores</span><select id="maxColors"><option>3</option><option selected>4</option><option>6</option><option>8</option><option>12</option><option>16</option></select></label><button class="secondary" id="btnAddColor">＋ Color</button></div>
+          </div>
+
+          <div class="sectionCard">
+            <div class="sectionTitle"><div><span class="eyebrow">PREPARACIÓN</span><h3>Descripción opcional</h3></div></div>
+            <textarea id="generationPrompt" class="promptBox" placeholder="Ejemplo: figura tipo juguete, proporciones compactas, detalles limpios y base plana para impresión 3D."></textarea>
+            <div class="promptHints"><span>▹ Ayuda a orientar el resultado</span><span>▹ No reemplaza las vistas</span></div>
+          </div>
+        </section>
+
+        <aside class="wizardSide">
+          <div class="stickyCard">
+            <div class="eyebrow">MOTOR</div>
+            <h3>Meshy 7.1</h3>
+            <p>Multi-Image → 3D con resolución Ultra 2K. La clave API se guarda solo en este navegador.</p>
+            <button class="secondary wide" id="btnApiSide">Configurar API</button>
+            <div class="statusLine"><span id="apiDot" class="statusDot"></span><span id="apiStatus">API no configurada</span></div>
+            <div class="divider"></div>
+            <div class="miniChecklist"><span>✓ Hasta 4 vistas</span><span>✓ Auto tamaño</span><span>✓ GLB + 3MF</span><span>✓ Auto Split</span><span>✓ Conectores</span></div>
+            <button class="primary wide giant" id="btnGenerate3D" data-tip="Crea el modelo 3D usando las imágenes y opciones elegidas">Crear modelo 3D</button>
+          </div>
+          <div class="stickyCard subtleCard"><b>Consejo para mejores resultados</b><p>Usa fondo limpio y muestra claramente el objeto desde frente, izquierda, atrás y derecha cuando sea posible.</p></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <main id="pageEditor" class="page">
+    <section class="editorShell">
+      <div class="editorTop">
+        <div class="editorTitle"><button class="iconButton" data-page="home" data-tip="Volver al inicio">←</button><div><span class="eyebrow">EDITOR 3D</span><h2 id="editorName">Sin modelo</h2></div></div>
+        <div class="editorTopActions"><button class="ghost" id="btnEditorLoad" data-tip="Carga un STL, OBJ, PLY, GLB, GLTF o 3MF">Cargar</button><button class="ghost" id="btnRepairCheck" data-tip="Comprueba bordes abiertos y geometría sospechosa">Analizar impresión</button><button class="primary" id="btnEditorExport" data-tip="Exporta la pieza activa o todo el proyecto">Exportar</button><input id="modelInput" type="file" accept=".stl,.obj,.ply,.glb,.gltf,.3mf" hidden></div>
+      </div>
+      <div class="editorLayout">
+        <aside class="editorPanel leftTools">
+          <div class="toolBlock"><span class="eyebrow">SELECCIÓN</span>
+            <button class="toolButton active" data-tool="object" data-tip="Selecciona una pieza completa">◫ <b>Objeto</b></button>
+            <button class="toolButton" data-tool="smart" data-tip="Haz clic en una zona y selecciona la región conectada automáticamente">✦ <b>Smart region</b></button>
+            <button class="toolButton" data-tool="brush" data-tip="Pinta sobre la superficie; mantén pulsado y arrastra">◉ <b>Pincel</b></button>
+            <button class="toolButton" data-tool="lasso" data-tip="Dibuja un lazo sobre la pantalla y selecciona lo que quede dentro">⌁ <b>Lazo</b></button>
+            <button class="toolButton" data-tool="trace" data-tip="Dibuja un trazo guiado para seleccionar un lado de la figura">／ <b>Trazo guiado</b></button>
+            <button class="toolButton" data-tool="color" data-tip="Selecciona regiones con color parecido al punto elegido">◈ <b>Por color</b></button>
+          </div>
+          <div class="toolBlock"><span class="eyebrow">SELECCIÓN</span>
+            <label class="rangeRow"><span>Radio pincel</span><input id="brushSize" type="range" min="2" max="80" value="18"><output id="brushSizeOut">18</output></label>
+            <label class="rangeRow"><span>Sensibilidad</span><input id="smartAngle" type="range" min="5" max="80" value="30"><output id="smartAngleOut">30°</output></label>
+            <label class="rangeRow"><span>Tolerancia color</span><input id="colorTolerance" type="range" min="2" max="100" value="28"><output id="colorToleranceOut">28</output></label>
+            <div class="buttonGrid"><button class="secondary" id="btnAddSelection" data-tip="Añade la nueva selección a la anterior">＋ Añadir</button><button class="secondary" id="btnSubSelection" data-tip="Quita la zona seleccionada de la selección actual">− Quitar</button></div>
+            <div class="buttonGrid"><button class="secondary" id="btnInvertSelection">Invertir</button><button class="danger" id="btnClearSelection">Limpiar</button></div>
+          </div>
+          <div class="toolBlock"><span class="eyebrow">SEPARAR</span>
+            <button class="primary wide" id="btnDetachSelection" data-tip="Convierte la selección en una pieza independiente y trata de cerrar el borde">Separar pieza</button>
+            <button class="secondary wide" id="btnSeparateAI" data-tip="Usa IA para dividir la figura por nombres de partes">Separar con IA</button>
+            <label class="checkLine"><input id="sealCut" type="checkbox" checked><span>Cerrar el borde</span></label>
+          </div>
+          <div class="toolBlock"><span class="eyebrow">UNIÓN</span>
+            <label class="fieldLine"><span>Tipo</span><select id="jointType"><option value="cylinder">Cilindro</option><option value="cube">Cuadrado</option><option value="magnet">Imán</option></select></label>
+            <label class="fieldLine"><span>Diámetro / ancho</span><input id="jointSize" type="number" value="4" min="0.8" step="0.1"></label>
+            <label class="fieldLine"><span>Profundidad</span><input id="jointDepth" type="number" value="3" min="0.5" step="0.1"></label>
+            <label class="fieldLine"><span>Holgura</span><input id="jointGap" type="number" value="0.15" min="0" step="0.01"></label>
+            <button class="secondary wide" id="btnJoint" data-tip="Crea un macho en una pieza y un alojamiento correspondiente en otra">Crear unión</button>
+          </div>
+        </aside>
+
+        <section id="viewportWrap" class="viewportWrap">
+          <div class="viewportTopbar"><div class="modelStats"><span id="meshStatusDot" class="statusDot"></span><span id="meshStatus">Sin modelo</span><small id="meshInfo"></small></div><div class="viewportButtons"><button class="iconButton" id="viewFront" data-tip="Vista frontal">F</button><button class="iconButton" id="viewTop" data-tip="Vista superior">T</button><button class="iconButton" id="viewSide" data-tip="Vista lateral">L</button><button class="iconButton" id="viewFrame" data-tip="Enmarcar todas las piezas">⌖</button><button class="iconButton" id="viewWire" data-tip="Mostrar líneas de malla">▦</button><button class="iconButton" id="viewXray" data-tip="Vista transparente">◌</button></div></div>
+          <canvas id="selectionOverlay"></canvas>
+          <div id="editorHint" class="editorHint">Carga un modelo 3D y elige una herramienta.</div>
+          <div id="viewerDrop" class="viewerDrop"><b>Arrastra tu modelo aquí</b><small>STL · OBJ · PLY · GLB · GLTF · 3MF</small></div>
+          <div id="selectionBadge" class="selectionBadge hiddenBadge">0 caras seleccionadas</div>
+        </section>
+
+        <aside class="editorPanel rightTools">
+          <div class="panelHeading"><span class="eyebrow">PIEZAS</span><span id="partCount" class="countBadge">0</span></div>
+          <div id="partsList" class="partsList"><div class="emptyParts">Sin piezas.</div></div>
+          <div class="divider"></div>
+          <div class="toolBlock"><span class="eyebrow">ACTIVA</span><label class="fieldLine"><span>Nombre</span><input id="activeName" type="text" placeholder="Pieza"></label><div class="buttonGrid"><button class="secondary" id="btnSolo">Aislar</button><button class="secondary" id="btnHide">Ocultar</button></div><div class="buttonGrid"><button class="secondary" id="btnDup">Duplicar</button><button class="danger" id="btnDeletePart">Eliminar</button></div></div>
+          <div class="divider"></div>
+          <div class="toolBlock"><span class="eyebrow">IA SPLIT</span><p class="helper small">Describe las partes que quieres separar. Meshy puede dividir por estructura o por color.</p><textarea id="aiSplitPrompt" class="promptBox mini" placeholder="Ej.: cabeza, cuerpo, sombrero, base"></textarea><label class="fieldLine"><span>Modo</span><select id="aiSplitMode"><option value="by_parts">Por partes</option><option value="by_color">Por color</option><option value="auto">Automático</option></select></label><label class="checkLine"><input id="aiConnectors" type="checkbox" checked><span>Añadir conectores</span></label><label class="fieldLine"><span>Distribución</span><select id="aiLayout"><option value="on_plate" selected>En placa</option><option value="assembled">Armado</option></select></label><button class="primary wide" id="btnRunAISplit" data-tip="Envía el modelo generado a Auto Split para crear piezas imprimibles">Ejecutar IA Split</button></div>
+          <div class="divider"></div>
+          <div class="toolBlock"><span class="eyebrow">EXPORTACIÓN</span><div class="buttonGrid"><button class="secondary" id="exportSTL">STL</button><button class="secondary" id="exportOBJ">OBJ</button><button class="secondary" id="export3MF">3MF</button><button class="secondary" id="exportProject">Proyecto</button></div><button class="primary wide" id="exportAll">Exportar todas</button></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="globalStatus"><span id="globalStatusText">Listo.</span><span id="globalProgress"></span></footer>
 </div>
-</header>
-<section id="dropZone" class="dropZone">
-<div class="dropIcon">＋</div>
-<div class="dropTitle">Arrastra tu modelo 3D aquí</div>
-<div class="dropSub">STL · OBJ · PLY · GLB · GLTF · 3MF</div>
-<div class="dropHint">o pulsa para buscar en tu computador</div>
-<input id="fileInput" type="file" accept=".stl,.obj,.ply,.glb,.gltf,.3mf,.json,image/png,image/jpeg,image/webp,model/stl,model/obj,model/gltf-binary,model/gltf+json" hidden>
-</section>
-<main class="workspace">
-<aside class="panel leftPanel">
-<div class="panelHeader"><div><div class="panelEyebrow">PROYECTO</div><div class="panelTitle">Herramientas</div></div></div>
-<div class="toolGroup">
-<button class="tool active" data-tool="select"><span>⌁</span><b>Seleccionar</b><small>clic sobre una parte</small></button>
-<button class="tool" data-tool="smart"><span>✦</span><b>Separar pieza</b><small>smart detach</small></button>
-<button class="tool" data-tool="color"><span>◉</span><b>Por color</b><small>seleccionar región</small></button>
-<button class="tool" data-tool="component"><span>◫</span><b>Componentes</b><small>partes desconectadas</small></button>
-<button class="tool" data-tool="measure"><span>↔</span><b>Medir</b><small>dimensiones / distancia</small></button>
+
+<div id="apiModal" class="modal hidden">
+  <div class="modalCard smallModal">
+    <div class="modalHeader"><div><span class="eyebrow">IA / API</span><h3>Proveedor de IA</h3></div><button class="iconButton" data-close-modal="apiModal">×</button></div>
+    <div class="modalBody">
+      <label class="fieldBlock"><span>Proveedor</span><select id="apiProvider"><option value="meshy">Meshy 7.1</option></select></label>
+      <label class="fieldBlock"><span>API Key</span><input id="apiKey" type="password" autocomplete="off" placeholder="Pega tu clave aquí"></label>
+      <label class="fieldBlock"><span>Endpoint</span><input id="apiEndpoint" value="https://api.meshy.ai/openapi/v1"></label>
+      <div class="warningBox">La clave no se incluye en GitHub. PartForge la guarda localmente en este navegador y la usa solo cuando tú ejecutas una tarea de IA.</div>
+      <div class="modalActions"><button class="secondary" data-close-modal="apiModal">Cancelar</button><button class="primary" id="btnSaveApi">Guardar</button></div>
+    </div>
+  </div>
 </div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">SELECCIÓN</div>
-<div class="selectionStats" id="selectionStats">Sin selección</div>
-<div class="buttonRow">
-<button class="secondary" id="btnPreview">Previsualizar</button>
-<button class="secondary" id="btnDetach">Separar</button>
+
+<div id="aiProgressModal" class="modal hidden">
+  <div class="modalCard smallModal">
+    <div class="modalHeader"><div><span class="eyebrow">GENERANDO</span><h3 id="aiProgressTitle">Procesando…</h3></div></div>
+    <div class="modalBody"><div class="progressRing"><div id="aiProgressValue">0%</div></div><div id="aiProgressMessage" class="progressMessage">Iniciando…</div><button class="secondary wide" id="btnCancelAI">Cerrar</button></div>
+  </div>
 </div>
-</div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">REPARAR</div>
-<label class="field"><span>Cap de bordes abiertos</span><input id="repairOpen" type="checkbox" checked></label>
-<label class="field"><span>Eliminar degenerados</span><input id="repairDeg" type="checkbox" checked></label>
-<button class="secondary wide" id="btnRepair">Reparar selección</button>
-</div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">PLACA</div>
-<label class="field"><span>Ancho X</span><input id="bedX" type="number" min="20" step="1" value="260"></label>
-<label class="field"><span>Fondo Y</span><input id="bedY" type="number" min="20" step="1" value="260"></label>
-<label class="field"><span>Altura Z</span><input id="bedZ" type="number" min="20" step="1" value="260"></label>
-<div class="buttonRow"><button class="secondary" id="btnOrient">Auto orientar</button><button class="secondary" id="btnArrange">Distribuir en placa</button></div>
-</div>
-<div class="tipBox">Consejo: para sacar un ojo de una cabeza, usa <b>Separar pieza</b> y haz clic en una cara del ojo. Ajusta “Sensibilidad” si invade la cabeza.</div>
-</aside>
-<section class="viewerPanel">
-<div class="viewerToolbar">
-<div class="modelMeta"><span class="statusDot" id="statusDot"></span><span id="modelName">Sin modelo</span><span class="muted" id="modelInfo">—</span></div>
-<div class="viewerActions">
-<button class="iconBtn" id="btnFront" title="Vista frontal">F</button>
-<button class="iconBtn" id="btnTop" title="Vista superior">T</button>
-<button class="iconBtn" id="btnSide" title="Vista lateral">L</button>
-<button class="iconBtn" id="btnFrame" title="Enmarcar modelo">⌖</button>
-<button class="iconBtn" id="btnWire" title="Alternar malla">▦</button>
-<button class="iconBtn" id="btnXray" title="X-Ray">◌</button>
-</div>
-</div>
-<div id="viewport"></div>
-<div class="viewerHud">
-<div class="hudPill">LMB rotar · RMB desplazar · rueda zoom</div>
-<div class="hudPill" id="unitsHud">mm</div>
-</div>
-<div id="emptyState" class="emptyState">
-<div class="emptyGlyph">◇</div>
-<div class="emptyTitle">Tu modelo aparecerá aquí</div>
-<div class="emptySub">Carga un STL, OBJ, GLB, PLY o 3MF para comenzar.</div>
-<button class="primary big" id="btnLoadEmpty">Cargar modelo</button>
-</div>
-</section>
-<aside class="panel rightPanel">
-<div class="panelHeader"><div><div class="panelEyebrow">OBJETOS</div><div class="panelTitle">Piezas</div></div><span class="badge" id="partCount">0</span></div>
-<div id="partList" class="partList"><div class="emptyList">Carga un modelo para ver sus piezas.</div></div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">PIEZA ACTIVA</div>
-<label class="field"><span>Nombre</span><input id="partName" type="text" placeholder="Pieza"></label>
-<div class="buttonRow"><button class="secondary" id="btnHide">Ocultar</button><button class="secondary" id="btnSolo">Aislar</button></div>
-<div class="buttonRow"><button class="secondary" id="btnDuplicate">Duplicar</button><button class="danger" id="btnDelete">Eliminar</button></div>
-</div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">ENCaje</div>
-<div class="subtle">Selecciona una pieza extraída y crea un sistema macho/hembra sobre su cara de corte.</div>
-<label class="field"><span>Tipo</span><select id="connectorType"><option value="cylinder">Cilíndrico</option><option value="cube">Cuadrado</option></select></label>
-<label class="field"><span>Diámetro / ancho</span><input id="connectorSize" type="number" value="4" min="0.8" step="0.1"></label>
-<label class="field"><span>Profundidad</span><input id="connectorDepth" type="number" value="3" min="0.5" step="0.1"></label>
-<label class="field"><span>Holgura</span><input id="connectorGap" type="number" value="0.15" min="0" step="0.01"></label>
-<label class="field"><span>Auto boolean</span><input id="connectorBoolean" type="checkbox" checked></label>
-<button class="primary wide" id="btnConnector">Crear encaje</button>
-</div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">SENSIBILIDAD SMART DETACH</div>
-<label class="field"><span>Ángulo límite</span><input id="smartAngle" type="range" min="5" max="80" value="32"><output id="smartAngleVal">32°</output></label>
-<label class="field"><span>Radio geodésico</span><input id="smartRadius" type="range" min="2" max="100" value="35"><output id="smartRadiusVal">35</output></label>
-<label class="field"><span>Tamaño máximo</span><input id="smartMax" type="number" min="10" value="15000"></label>
-</div>
-<div class="divider"></div>
-<div class="miniSection">
-<div class="miniTitle">EXPORTAR</div>
-<div class="exportGrid">
-<button class="secondary" id="btnSTL">STL</button>
-<button class="secondary" id="btn3MF">3MF</button>
-<button class="secondary" id="btnOBJ">OBJ</button>
-<button class="secondary" id="btnJSON">Proyecto</button>
-</div>
-<button class="primary wide" id="btnPack">Exportar todas las piezas</button>
-</div>
-</aside>
-</main>
-<footer class="statusbar"><div id="statusMessage">Listo.</div><div id="progressText"></div></footer>
-</div>
-<div id="modal" class="modal hidden">
-<div class="modalCard">
-<div class="modalHeader"><div><div class="panelEyebrow">ASISTENTE</div><div id="modalTitle" class="panelTitle">PartForge</div></div><button class="iconBtn" id="modalClose">×</button></div>
-<div id="modalBody"></div>
-</div>
-</div>
+
+<div id="toast" class="toast"></div>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
