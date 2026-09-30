@@ -615,6 +615,16 @@ async function cutByPlane(){
 }
 
 function view(axis){
-window.addEventListener("error",e=>{if(e?.message){$("bootText").textContent=e.message;modal("bootError",true)}});window.addEventListener("unhandledrejection",e=>{if(e?.reason){$("bootText").textContent=e.reason.message||String(e.reason);modal("bootError",true)}});
+  if(!S.parts.length)return;
+  const T=S.three,b=new T.Box3();
+  S.parts.forEach(p=>b.expandByObject(p.mesh));
+  if(b.isEmpty())return;
+  const center=b.getCenter(new T.Vector3()),size=b.getSize(new T.Vector3()),d=Math.max(size.x,size.y,size.z)*2.2;
+  const dir=axis==="front"?new T.Vector3(0,0,1):axis==="top"?new T.Vector3(0,1,0):new T.Vector3(1,0,0);
+  S.camera.position.copy(center).add(dir.multiplyScalar(d));
+  S.controls.target.copy(center);S.controls.update();
+}
+window.addEventListener("error",e=>{if(e?.message){const b=$("bootText");if(b)b.textContent=e.message;modal("bootError",true)}});
+window.addEventListener("unhandledrejection",e=>{if(e?.reason){const b=$("bootText");if(b)b.textContent=e.reason.message||String(e.reason);modal("bootError",true)}});
 events();tipInit();closeModalEvents();renderViews();
 page("home");
