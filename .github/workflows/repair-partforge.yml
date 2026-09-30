@@ -23,43 +23,36 @@ jobs:
 
           source = Path(".github/workflows/assemble-partforge-local.yml").read_text(encoding="utf-8")
 
-          def extract(name, marker):
-              start = "cat > partforge/" + name + " <<'" + marker + "'"
-              i = source.find(start)
-              if i < 0:
-                  raise SystemExit("No se encontró el bloque " + name)
-              i = source.find("\n", i) + 1
-              j = source.find("\n" + marker, i)
-              if j < 0:
-                  raise SystemExit("No se encontró el cierre " + name)
-              return source[i:j] + "\n"
+          a = source.find("cat > partforge/index.html <<'EOF_INDEX'")
+          if a < 0: raise SystemExit("index start missing")
+          a = source.find("\n", a) + 1
+          b = source.find("\nEOF_INDEX", a)
+          if b < 0: raise SystemExit("index end missing")
+          index = source[a:b] + "\n"
 
-          index = extract("index.html", "EOF_INDEX")
-          js = extract("free.js", "EOF_JS")
+          a = source.find("cat > partforge/free.js <<'EOF_JS'")
+          if a < 0: raise SystemExit("js start missing")
+          a = source.find("\n", a) + 1
+          js = source[a:].rstrip() + "\n"
 
-          if "<title>PartForge 3D" not in index:
-              raise SystemExit("index inválido")
-          if "function generate" not in js:
-              raise SystemExit("free.js inválido")
-          if any(x in index.lower() for x in ["meshy","tripo","api.m"]):
-              raise SystemExit("El index contiene proveedor de IA")
-          if any(x in js.lower() for x in ["meshy","tripo","api.m"]):
-              raise SystemExit("El JS contiene proveedor de IA")
+          if "<title>PartForge 3D" not in index: raise SystemExit("index invalid")
+          if "function generate" not in js: raise SystemExit("js invalid")
+          for bad in ("meshy","tripo","api.m"):
+              if bad in index.lower() or bad in js.lower():
+                  raise SystemExit("paid AI/API reference found: "+bad)
 
-          Path("partforge/index.html").write_text(index, encoding="utf-8")
-          Path("partforge/free.js").write_text(js, encoding="utf-8")
+          Path("partforge/index.html").write_text(index,encoding="utf-8")
+          Path("partforge/free.js").write_text(js,encoding="utf-8")
           Path("partforge/manifest.json").write_text(json.dumps({
-              "name":"PartForge 3D Local Free","short_name":"PartForge",
-              "start_url":"./index.html","display":"standalone",
-              "background_color":"#070a10","theme_color":"#8d72ff","lang":"es-CL"
+            "name":"PartForge 3D Local Free","short_name":"PartForge",
+            "start_url":"./index.html","display":"standalone",
+            "background_color":"#070a10","theme_color":"#8d72ff","lang":"es-CL"
           },ensure_ascii=False,indent=2),encoding="utf-8")
           Path("partforge/README.md").write_text(
-              "# PartForge 3D — Local Free\n\n"
-              "Creación y edición 3D gratuita en el navegador. "
-              "Sin Meshy, Tripo, créditos de IA ni claves API.\n\n"
-              "Imagen → 3D usa reconstrucción geométrica local basada en las vistas disponibles. "
-              "La malla, selección, separación, uniones y exportaciones se procesan en el navegador.\n",
-              encoding="utf-8")
+            "# PartForge 3D — Local Free\n\n"
+            "Creación y edición 3D gratuita. Sin Meshy, Tripo, créditos ni API keys.\n\n"
+            "Imagen → 3D usa reconstrucción geométrica local; la edición y exportación se realizan en el navegador.\n",
+            encoding="utf-8")
           PY
           rm -f partforge/app.js
           rm -rf partforge/_build
