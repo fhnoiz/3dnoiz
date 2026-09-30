@@ -4,6 +4,7 @@ on:
     paths:
       - "partforge/free.js"
       - "partforge/index.html"
+      - "partforge/triposr-webgpu.js"
       - "partforge/smoke-test.mjs"
       - ".github/workflows/validate-partforge-latest.yml"
 permissions:
@@ -15,7 +16,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Syntax
-        run: node --check partforge/free.js
+        run: |
+          node --check partforge/free.js
+          node --check partforge/triposr-webgpu.js
 
       - name: No paid AI APIs
         shell: bash
