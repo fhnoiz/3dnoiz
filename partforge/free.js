@@ -35,7 +35,7 @@ async function generate(){
     const {makeTripoGeometry}=await import("./triposr-webgpu.js?v=1");
     const primary=S.images[0];
     if(S.images.length>1){
-      $("progressMsg").textContent="Usando la vista principal. Las vistas adicionales se conservan para la siguiente etapa multi-vista.";
+      $("progressMsg").textContent="Motor neural actual: genera desde la vista principal. Las otras vistas se mantienen listas para reconstrucción multi-vista avanzada.";
     }
     const d=await makeTripoGeometry(primary.url,$("quality").value,(msg)=>{
       $("progressMsg").textContent=msg;
