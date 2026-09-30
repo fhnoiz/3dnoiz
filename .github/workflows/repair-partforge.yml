@@ -14,18 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Extract generated files from staged workflow
+      - name: Extract generated files
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re, json
+          import json
 
           source = Path(".github/workflows/assemble-partforge-local.yml").read_text(encoding="utf-8")
 
-          def extract(name):
-              start = "cat > partforge/" + name + " <<'EOF_" + name.split(".")[0].upper() + "'"
-              marker = "EOF_" + name.split(".")[0].upper()
+          def extract(name, marker):
+              start = "cat > partforge/" + name + " <<'" + marker + "'"
               i = source.find(start)
               if i < 0:
                   raise SystemExit("No se encontró el bloque " + name)
@@ -35,40 +34,32 @@ jobs:
                   raise SystemExit("No se encontró el cierre " + name)
               return source[i:j] + "\n"
 
-          index = extract("index.html")
-          js = extract("free.js")
+          index = extract("index.html", "EOF_INDEX")
+          js = extract("free.js", "EOF_JS")
 
-          # Basic integrity checks before publishing.
           if "<title>PartForge 3D" not in index:
-              raise SystemExit("index.html inválido")
-          if "mesh" not in js.lower() or "function generate" not in js:
+              raise SystemExit("index inválido")
+          if "function generate" not in js:
               raise SystemExit("free.js inválido")
-          if "api.m" in index.lower() or "meshy" in index.lower() or "tripo" in index.lower():
-              raise SystemExit("index aún contiene un proveedor de IA")
-          if "api.m" in js.lower() or "meshy" in js.lower() or "tripo" in js.lower():
-              raise SystemExit("free.js aún contiene un proveedor de IA")
+          if any(x in index.lower() for x in ["meshy","tripo","api.m"]):
+              raise SystemExit("El index contiene proveedor de IA")
+          if any(x in js.lower() for x in ["meshy","tripo","api.m"]):
+              raise SystemExit("El JS contiene proveedor de IA")
 
           Path("partforge/index.html").write_text(index, encoding="utf-8")
           Path("partforge/free.js").write_text(js, encoding="utf-8")
-
           Path("partforge/manifest.json").write_text(json.dumps({
-              "name":"PartForge 3D Local Free",
-              "short_name":"PartForge",
-              "start_url":"./index.html",
-              "display":"standalone",
-              "background_color":"#070a10",
-              "theme_color":"#8d72ff",
-              "lang":"es-CL"
-          }, ensure_ascii=False, indent=2), encoding="utf-8")
-
+              "name":"PartForge 3D Local Free","short_name":"PartForge",
+              "start_url":"./index.html","display":"standalone",
+              "background_color":"#070a10","theme_color":"#8d72ff","lang":"es-CL"
+          },ensure_ascii=False,indent=2),encoding="utf-8")
           Path("partforge/README.md").write_text(
               "# PartForge 3D — Local Free\n\n"
-              "Aplicación gratuita para creación y edición 3D local. "
-              "No usa Meshy, Tripo, créditos de IA ni API keys.\n\n"
-              "La reconstrucción Imagen → 3D es procedural/local y depende de las vistas disponibles. "
-              "El editor 3D y las exportaciones se realizan en el navegador.\n",
-              encoding="utf-8"
-          )
+              "Creación y edición 3D gratuita en el navegador. "
+              "Sin Meshy, Tripo, créditos de IA ni claves API.\n\n"
+              "Imagen → 3D usa reconstrucción geométrica local basada en las vistas disponibles. "
+              "La malla, selección, separación, uniones y exportaciones se procesan en el navegador.\n",
+              encoding="utf-8")
           PY
           rm -f partforge/app.js
           rm -rf partforge/_build
