@@ -24,22 +24,28 @@ jobs:
           root = Path("partforge/_build")
 
           def unpack(src, dst):
-              raw = base64.b64decode((root / src).read_text().strip())
-              (Path("partforge") / dst).write_bytes(gzip.decompress(raw))
+              text = ''.join((root / src).read_text().split())
+              text += '=' * ((4 - len(text) % 4) % 4)
+              print(f"Decoding {src}: {len(text)} base64 chars")
+              raw = base64.b64decode(text)
+              print(f"Decoded {src}: {len(raw)} bytes")
+              data = gzip.decompress(raw)
+              print(f"Decompressed {src}: {len(data)} bytes -> {dst}")
+              (Path("partforge") / dst).write_bytes(data)
 
-          unpack("free.js.gz.b64", "free.js")
-          unpack("index.html.gz.b64", "index.html")
-          unpack("manifest.json.gz.b64", "manifest.json")
-          unpack("README.md.gz.b64", "README.md")
+          for src, dst in [
+              ("free.js.gz.b64", "free.js"),
+              ("index.html.gz.b64", "index.html"),
+              ("manifest.json.gz.b64", "manifest.json"),
+              ("README.md.gz.b64", "README.md"),
+          ]:
+              unpack(src, dst)
 
           old = Path("partforge/app.js")
           if old.exists():
               old.unlink()
 
           shutil.rmtree(root)
-
-          # Keep the existing stylesheet for compatibility with older repo assets;
-          # the new Local edition is self-contained in index.html/free.js.
           PY
 
       - name: Publish assembled files
