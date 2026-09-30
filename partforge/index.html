@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<meta name="description" content="PartForge 3D — separa modelos 3D, crea encajes y prepara piezas para impresión 3D.">
+<link rel="manifest" href="./manifest.json">
+<title>PartForge 3D</title>
+<style>:root{--bg:#07090d;--panel:#0e1117;--panel2:#121722;--line:#222936;--text:#eef2f8;--muted:#8792a4;--accent:#7c5cff;--accent2:#4f7cff;--good:#31d29a;--danger:#ff5f6d;--shadow:0 18px 55px rgba(0,0,0,.35)}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{cursor:pointer;color:inherit}.topbar{height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(10,12,17,.92);backdrop-filter:blur(18px);position:relative;z-index:20}.brand{display:flex;align-items:center;gap:11px}.brandMark{width:35px;height:35px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:12px;font-weight:900;letter-spacing:.5px}.brandName{font-weight:850;letter-spacing:-.5px}.brandName span{color:#9e91ff}.brandSub{font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:2px}.topActions{display:flex;gap:8px}.primary,.secondary,.ghost,.danger,.iconBtn{border:1px solid var(--line);background:#11161f;border-radius:10px;height:38px;padding:0 13px;font-weight:700;font-size:12px}.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent),#5b75ff)}.secondary:hover,.ghost:hover,.iconBtn:hover{border-color:#3a4454;background:#171d27}.danger{border-color:rgba(255,95,109,.3);background:rgba(255,95,109,.08);color:#ff8993}.wide{width:100%}.big{height:44px;padding:0 20px}.workspace{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;height:calc(100vh - 105px)}.panel{background:var(--panel);overflow:auto}.leftPanel{border-right:1px solid var(--line)}.rightPanel{border-left:1px solid var(--line)}.viewerPanel{position:relative;background:#090c11;min-width:0}.viewerToolbar{height:46px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(10,12,17,.74);position:absolute;left:0;right:0;top:0;z-index:5}.modelMeta,.viewerActions{display:flex;align-items:center;gap:8px}.modelMeta{font-size:12px;font-weight:750}.muted{color:var(--muted);font-weight:500}.statusDot{width:7px;height:7px;border-radius:50%;background:#555f6f}.statusDot.good{background:var(--good);box-shadow:0 0 0 4px rgba(49,210,154,.08)}.iconBtn{width:34px;padding:0;display:grid;place-items:center;background:#0f141c}.viewerPanel #viewport{position:absolute;inset:0}.viewerHud{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;pointer-events:none}.hudPill{background:rgba(8,10,14,.8);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:7px 10px;color:#a9b2c2;font-size:10px;backdrop-filter:blur(8px)}.emptyState{position:absolute;inset:46px 0 0;display:grid;place-items:center;align-content:center;gap:10px;pointer-events:none}.emptyState>*{pointer-events:auto}.emptyGlyph{font-size:48px;color:#737cff;opacity:.8}.emptyTitle{font-size:20px;font-weight:850}.emptySub{color:var(--muted);font-size:12px}.dropZone{position:fixed;inset:80px 250px 45px 250px;display:none;z-index:30;background:rgba(124,92,255,.06);border:1px dashed rgba(124,92,255,.6);border-radius:20px;place-items:center;align-content:center;gap:9px;backdrop-filter:blur(12px)}.dropZone.show{display:grid}.dropIcon{width:54px;height:54px;border-radius:16px;background:rgba(124,92,255,.15);display:grid;place-items:center;color:#a59bff;font-size:30px}.dropTitle{font-size:22px;font-weight:850}.dropSub,.dropHint{font-size:12px;color:var(--muted)}.dropHint{opacity:.8}.panelHeader{padding:16px 15px 12px;display:flex;justify-content:space-between;align-items:flex-start}.panelEyebrow,.miniTitle{font-size:9px;letter-spacing:1.7px;color:#657083;font-weight:800}.panelTitle{font-size:16px;font-weight:850;margin-top:2px}.badge{padding:4px 7px;border-radius:8px;background:#171d27;color:#9ea8b8;font-size:10px}.toolGroup{display:grid;gap:7px;padding:0 10px}.tool{display:grid;grid-template-columns:27px 1fr;grid-template-rows:auto auto;column-gap:5px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;border-radius:11px;padding:9px 9px}.tool>span{grid-row:1/3;align-self:center;color:#808b9b;font-size:17px}.tool b{font-size:12px}.tool small{font-size:10px;color:var(--muted)}.tool:hover,.tool.active{background:#151b24;border-color:#252d3a}.tool.active>span{color:#a193ff}.divider{height:1px;background:var(--line);margin:14px 0}.miniSection{padding:0 12px}.miniTitle{margin-bottom:9px}.subtle{font-size:10px;color:var(--muted);line-height:1.45;margin-bottom:9px}.field{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:7px 0;font-size:10px;color:#aab4c4}.field input,.field select{width:100%;background:#0a0e14;border:1px solid #222a36;color:#e9eef5;border-radius:8px;height:30px;padding:0 8px;outline:none}.field input[type=checkbox]{width:15px;height:15px}.field input[type=range]{padding:0}.field output{color:#b9c1d0;font-size:10px;min-width:30px;text-align:right}.buttonRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0}.selectionStats{background:#0a0e14;border:1px solid #202734;border-radius:9px;padding:8px;font-size:10px;color:#98a3b4;line-height:1.45;min-height:36px}.tipBox{margin:14px 12px;padding:10px 11px;border-radius:10px;background:rgba(124,92,255,.07);border:1px solid rgba(124,92,255,.14);font-size:10px;line-height:1.5;color:#9da7b6}.partList{padding:0 10px;display:grid;gap:6px}.partItem{border:1px solid #202734;background:#0a0e14;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:8px}.partItem.active{border-color:#6256bb;background:rgba(124,92,255,.08)}.partSwatch{width:10px;height:10px;border-radius:3px;background:#9ba6b6;flex:none}.partLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700}.partMeta{margin-left:auto;color:#677286;font-size:9px}.emptyList{padding:10px;color:#687386;font-size:11px;line-height:1.5}.exportGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}.statusbar{height:39px;background:#0a0d12;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:#6e798a;font-size:10px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:50;display:grid;place-items:center;backdrop-filter:blur(5px)}.modal.hidden{display:none}.modalCard{width:min(720px,92vw);max-height:88vh;overflow:auto;border:1px solid #303744;background:#0f131b;border-radius:16px;box-shadow:var(--shadow)}.modalHeader{display:flex;justify-content:space-between;align-items:flex-start;padding:15px 16px;border-bottom:1px solid var(--line)}.modalBody{padding:16px}.notice{padding:12px;border-radius:10px;background:#101621;border:1px solid #222b39;font-size:11px;line-height:1.55;color:#a6afbf}.kbd{padding:2px 5px;border-radius:5px;background:#171d27;border:1px solid #293141;color:#d7deea;font-size:10px}.metricGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.metric{background:#0a0e14;border:1px solid #202734;border-radius:10px;padding:10px}.metric b{display:block;font-size:14px}.metric span{font-size:9px;color:#677286}.dropActive{border-color:#9b90ff!important;background:rgba(124,92,255,.12)!important}@media(max-width:1100px){.workspace{grid-template-columns:215px minmax(0,1fr) 250px}}@media(max-width:880px){body{overflow:auto}.workspace{height:auto;grid-template-columns:1fr;min-height:calc(100vh - 105px)}.leftPanel,.rightPanel{display:none}.viewerPanel{height:calc(100vh - 105px);min-height:560px}.dropZone{inset:80px 16px 45px 16px}.topActions .ghost{display:none}}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+<div class="brand"><div class="brandMark">PF</div><div><div class="brandName">PartForge <span>3D</span></div><div class="brandSub">MODEL → PARTS → PRINT</div></div></div>
+<div class="topActions">
+<button class="ghost" id="btnNew">Nuevo</button>
+<button class="ghost" id="btnSaveProject">Guardar proyecto</button>
+<button class="ghost" id="btnAI">IA 3D</button>
+<button class="primary" id="btnExport">Exportar</button>
+</div>
+</header>
+<section id="dropZone" class="dropZone">
+<div class="dropIcon">＋</div>
+<div class="dropTitle">Arrastra tu modelo 3D aquí</div>
+<div class="dropSub">STL · OBJ · PLY · GLB · GLTF · 3MF</div>
+<div class="dropHint">o pulsa para buscar en tu computador</div>
+<input id="fileInput" type="file" accept=".stl,.obj,.ply,.glb,.gltf,.3mf,.json,image/png,image/jpeg,image/webp,model/stl,model/obj,model/gltf-binary,model/gltf+json" hidden>
+</section>
+<main class="workspace">
+<aside class="panel leftPanel">
+<div class="panelHeader"><div><div class="panelEyebrow">PROYECTO</div><div class="panelTitle">Herramientas</div></div></div>
+<div class="toolGroup">
+<button class="tool active" data-tool="select"><span>⌁</span><b>Seleccionar</b><small>clic sobre una parte</small></button>
+<button class="tool" data-tool="smart"><span>✦</span><b>Separar pieza</b><small>smart detach</small></button>
+<button class="tool" data-tool="color"><span>◉</span><b>Por color</b><small>seleccionar región</small></button>
+<button class="tool" data-tool="component"><span>◫</span><b>Componentes</b><small>partes desconectadas</small></button>
+<button class="tool" data-tool="measure"><span>↔</span><b>Medir</b><small>dimensiones / distancia</small></button>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">SELECCIÓN</div>
+<div class="selectionStats" id="selectionStats">Sin selección</div>
+<div class="buttonRow">
+<button class="secondary" id="btnPreview">Previsualizar</button>
+<button class="secondary" id="btnDetach">Separar</button>
+</div>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">REPARAR</div>
+<label class="field"><span>Cap de bordes abiertos</span><input id="repairOpen" type="checkbox" checked></label>
+<label class="field"><span>Eliminar degenerados</span><input id="repairDeg" type="checkbox" checked></label>
+<button class="secondary wide" id="btnRepair">Reparar selección</button>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">PLACA</div>
+<label class="field"><span>Ancho X</span><input id="bedX" type="number" min="20" step="1" value="260"></label>
+<label class="field"><span>Fondo Y</span><input id="bedY" type="number" min="20" step="1" value="260"></label>
+<label class="field"><span>Altura Z</span><input id="bedZ" type="number" min="20" step="1" value="260"></label>
+<div class="buttonRow"><button class="secondary" id="btnOrient">Auto orientar</button><button class="secondary" id="btnArrange">Distribuir en placa</button></div>
+</div>
+<div class="tipBox">Consejo: para sacar un ojo de una cabeza, usa <b>Separar pieza</b> y haz clic en una cara del ojo. Ajusta “Sensibilidad” si invade la cabeza.</div>
+</aside>
+<section class="viewerPanel">
+<div class="viewerToolbar">
+<div class="modelMeta"><span class="statusDot" id="statusDot"></span><span id="modelName">Sin modelo</span><span class="muted" id="modelInfo">—</span></div>
+<div class="viewerActions">
+<button class="iconBtn" id="btnFront" title="Vista frontal">F</button>
+<button class="iconBtn" id="btnTop" title="Vista superior">T</button>
+<button class="iconBtn" id="btnSide" title="Vista lateral">L</button>
+<button class="iconBtn" id="btnFrame" title="Enmarcar modelo">⌖</button>
+<button class="iconBtn" id="btnWire" title="Alternar malla">▦</button>
+<button class="iconBtn" id="btnXray" title="X-Ray">◌</button>
+</div>
+</div>
+<div id="viewport"></div>
+<div class="viewerHud">
+<div class="hudPill">LMB rotar · RMB desplazar · rueda zoom</div>
+<div class="hudPill" id="unitsHud">mm</div>
+</div>
+<div id="emptyState" class="emptyState">
+<div class="emptyGlyph">◇</div>
+<div class="emptyTitle">Tu modelo aparecerá aquí</div>
+<div class="emptySub">Carga un STL, OBJ, GLB, PLY o 3MF para comenzar.</div>
+<button class="primary big" id="btnLoadEmpty">Cargar modelo</button>
+</div>
+</section>
+<aside class="panel rightPanel">
+<div class="panelHeader"><div><div class="panelEyebrow">OBJETOS</div><div class="panelTitle">Piezas</div></div><span class="badge" id="partCount">0</span></div>
+<div id="partList" class="partList"><div class="emptyList">Carga un modelo para ver sus piezas.</div></div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">PIEZA ACTIVA</div>
+<label class="field"><span>Nombre</span><input id="partName" type="text" placeholder="Pieza"></label>
+<div class="buttonRow"><button class="secondary" id="btnHide">Ocultar</button><button class="secondary" id="btnSolo">Aislar</button></div>
+<div class="buttonRow"><button class="secondary" id="btnDuplicate">Duplicar</button><button class="danger" id="btnDelete">Eliminar</button></div>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">ENCaje</div>
+<div class="subtle">Selecciona una pieza extraída y crea un sistema macho/hembra sobre su cara de corte.</div>
+<label class="field"><span>Tipo</span><select id="connectorType"><option value="cylinder">Cilíndrico</option><option value="cube">Cuadrado</option></select></label>
+<label class="field"><span>Diámetro / ancho</span><input id="connectorSize" type="number" value="4" min="0.8" step="0.1"></label>
+<label class="field"><span>Profundidad</span><input id="connectorDepth" type="number" value="3" min="0.5" step="0.1"></label>
+<label class="field"><span>Holgura</span><input id="connectorGap" type="number" value="0.15" min="0" step="0.01"></label>
+<label class="field"><span>Auto boolean</span><input id="connectorBoolean" type="checkbox" checked></label>
+<button class="primary wide" id="btnConnector">Crear encaje</button>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">SENSIBILIDAD SMART DETACH</div>
+<label class="field"><span>Ángulo límite</span><input id="smartAngle" type="range" min="5" max="80" value="32"><output id="smartAngleVal">32°</output></label>
+<label class="field"><span>Radio geodésico</span><input id="smartRadius" type="range" min="2" max="100" value="35"><output id="smartRadiusVal">35</output></label>
+<label class="field"><span>Tamaño máximo</span><input id="smartMax" type="number" min="10" value="15000"></label>
+</div>
+<div class="divider"></div>
+<div class="miniSection">
+<div class="miniTitle">EXPORTAR</div>
+<div class="exportGrid">
+<button class="secondary" id="btnSTL">STL</button>
+<button class="secondary" id="btn3MF">3MF</button>
+<button class="secondary" id="btnOBJ">OBJ</button>
+<button class="secondary" id="btnJSON">Proyecto</button>
+</div>
+<button class="primary wide" id="btnPack">Exportar todas las piezas</button>
+</div>
+</aside>
+</main>
+<footer class="statusbar"><div id="statusMessage">Listo.</div><div id="progressText"></div></footer>
+</div>
+<div id="modal" class="modal hidden">
+<div class="modalCard">
+<div class="modalHeader"><div><div class="panelEyebrow">ASISTENTE</div><div id="modalTitle" class="panelTitle">PartForge</div></div><button class="iconBtn" id="modalClose">×</button></div>
+<div id="modalBody"></div>
+</div>
+</div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
