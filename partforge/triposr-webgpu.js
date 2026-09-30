@@ -9,7 +9,21 @@ let ortPromise=null;
 let sessionsPromise=null;
 
 async function getOrt(){
-  if(!ortPromise)ortPromise=import(ORT_URL);
+  if(globalThis.ort)return globalThis.ort;
+  if(!ortPromise)ortPromise=new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-partforge-ort]');
+    if(existing){
+      existing.addEventListener("load",()=>resolve(globalThis.ort));
+      existing.addEventListener("error",()=>reject(new Error("No se pudo cargar ONNX Runtime Web.")));
+      return;
+    }
+    const s=document.createElement("script");
+    s.dataset.partforgeOrt="1";
+    s.src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/ort.webgpu.min.js";
+    s.onload=()=>globalThis.ort?resolve(globalThis.ort):reject(new Error("ONNX Runtime Web se cargó pero no expuso ort."));
+    s.onerror=()=>reject(new Error("No se pudo cargar ONNX Runtime Web 1.30.0."));
+    document.head.appendChild(s);
+  });
   return ortPromise;
 }
 
@@ -57,7 +71,7 @@ async function loadSessions(onProgress){
     ]);
     onProgress?.("Inicializando GPU…");
     const triplane=await ort.InferenceSession.create(modelData,{
-      executionProviders:["webgpu","wasm"],
+      executionProviders:["webgpu"],
       graphOptimizationLevel:"all",
       externalData:[{path:"./triplane_q8.onnx.data",data:externalData}]
     });
@@ -188,8 +202,9 @@ async function makeTripoGeometry(url,quality,onProgress){
       pts[i*3]=xx;pts[i*3+1]=yy;pts[i*3+2]=zz;
       feat.set(bilinear120(triData,xx/radius,yy/radius,zz/radius),i*120);
     }
-    const dec=await decoder.run({features:new ort.Tensor("float32",feat,[n,120])});
-    density.set(dec.density.data,start);
+    const decIn=decoder.inputNames[0],decOut=decoder.outputNames[0];
+    const dec=await decoder.run({[decIn]:new ort.Tensor("float32",feat,[n,120])});
+    density.set(dec[decOut].data,start);
     onProgress?.("Reconstruyendo volumen · "+Math.round((start+n)/total*100)+"%");
   }
   onProgress?.("Extrayendo superficie…");
