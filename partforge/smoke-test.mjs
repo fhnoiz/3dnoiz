@@ -56,6 +56,16 @@ try {
   const meshInfo = await page.locator("#meshInfo").textContent();
   if (!meshInfo.includes("1 pieza")) { const status = await page.locator("#statusText").textContent(); throw new Error("STL no se pudo cargar en el editor: meshInfo=" + meshInfo + " status=" + status + " errors=" + JSON.stringify(errors)); }
 
+  const toolIds = ["object","smart","brush","lasso","trace","color","plane"];
+  for (const id of toolIds) {
+    await page.locator('[data-tool="'+id+'"]' ).click();
+    if (!(await page.locator('[data-tool="'+id+'"]' ).evaluate(el => el.classList.contains("active")))) throw new Error("La herramienta no se activó: " + id);
+  }
+  if (!(await page.locator("#cutBox").isVisible())) throw new Error("El panel de corte por plano no se mostró.");
+  for (const type of ["plug","dowel","snap","dovetail","magnet"]) {
+    await page.locator("#joint").selectOption(type);
+  }
+
   if (!(await page.locator("#viewer canvas").count())) throw new Error("El visor 3D no se inicializó.");
   if (await page.locator("#bootError").isVisible()) throw new Error("PartForge mostró el error de arranque.");
   if (blockedPaid.length) throw new Error("Se detectó una llamada a IA de pago: " + blockedPaid[0]);
