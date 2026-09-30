@@ -65,7 +65,8 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 <button class="tool" data-tool="brush" data-tip="Selecciona caras alrededor del punto elegido">◉ Pincel</button>
 <button class="tool" data-tool="lasso" data-tip="Dibuja un lazo en la vista para seleccionar caras proyectadas">⌁ Lazo</button>
 <button class="tool" data-tool="trace" data-tip="Trazo guiado para seleccionar una zona cercana">／ Trazo</button>
-<button class="tool" data-tool="color" data-tip="Selecciona caras con un color parecido">◈ Por color</button>
+<button class="tool" data-tool="color" data-tip="Selecciona zonas que comparten un color dentro de la tolerancia indicada">◈ Por color</button>
+ <button class="tool" data-tool="plane" data-tip="Corta la pieza con un plano preciso y genera superficies cerradas">▱ Corte por plano</button>
 <div class="field"><label>Radio pincel</label><input id="brush" type="range" min="2" max="80" value="18"></div>
 <div class="field"><label>Ángulo Smart</label><input id="angle" type="range" min="5" max="85" value="30"></div>
 <div class="field"><label>Tolerancia color</label><input id="tol" type="range" min="2" max="100" value="28"></div>
@@ -75,6 +76,13 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 <button class="primary full" id="detach" data-tip="Convierte la selección actual en una pieza independiente">Separar pieza</button>
 <button class="secondary full" id="split" data-tip="Divide la pieza por componentes de conectividad facial">Separar por componentes</button>
 <label class="small" style="display:flex;gap:8px;margin-top:9px"><input id="cap" type="checkbox" checked> Intentar cerrar el corte</label>
+ <div id="cutBox" class="panel hidden" style="margin-top:10px;padding:12px">
+   <span class="eyebrow">PLANO DE CORTE</span>
+   <div class="field"><label>Normal X / Y / Z</label><div class="row"><input id="cutNx" type="number" value="0" step="0.1" style="width:70px"><input id="cutNy" type="number" value="0" step="0.1" style="width:70px"><input id="cutNz" type="number" value="1" step="0.1" style="width:70px"></div></div>
+   <div class="field"><label>Desplazamiento del plano (mm)</label><input id="cutOffset" type="number" value="0" step="0.1"></div>
+   <div class="field"><label>Resultado</label><select id="cutResult"><option value="both">Separar en 2 piezas</option><option value="keepPositive">Conservar lado +</option><option value="keepNegative">Conservar lado −</option></select></div>
+   <button class="primary full" id="runCut">Ejecutar corte</button>
+ </div>
 </aside>
 <section class="viewer" id="viewer"><div class="bar"><div class="pills" id="meshInfo">Sin modelo</div><div class="row"><button class="ghost" id="front">Frente</button><button class="ghost" id="top">Arriba</button><button class="ghost" id="side">Lado</button><button class="ghost" id="frame">Enmarcar</button><button class="ghost" id="wire">Malla</button><button class="ghost" id="xray">X-Ray</button></div></div></section>
 <aside class="side right">
@@ -84,7 +92,7 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 <div class="btns"><button class="secondary" id="solo">Solo</button><button class="secondary" id="hide">Ocultar</button><button class="secondary" id="dup">Duplicar</button><button class="danger" id="del">Eliminar</button></div>
 <hr style="border-color:#202b39;border-style:solid;border-width:1px 0 0;margin:14px 0">
 <span class="eyebrow">UNIÓN</span>
-<div class="field"><label>Tipo</label><select id="joint"><option value="cylinder">Cilindro</option><option value="cube">Cuadrado</option><option value="magnet">Imán</option></select></div>
+<div class="field"><label>Tipo</label><select id="joint"><option value="plug">Plug macho/hembra</option><option value="dowel">Pasador / Dowel</option><option value="snap">Snap-fit</option><option value="dovetail">Dovetail</option><option value="magnet">Imán</option></select></div>
 <div class="field"><label>Diámetro / ancho</label><input id="jointSize" type="number" value="4" min="0.8" step="0.1"></div>
 <div class="field"><label>Profundidad</label><input id="jointDepth" type="number" value="3" min="0.5" step="0.1"></div>
 <div class="field"><label>Holgura</label><input id="jointGap" type="number" value="0.15" min="0" step="0.01"></div>
@@ -98,10 +106,10 @@ button,input,select{font:inherit}button{cursor:pointer;border:0}.top{height:70px
 </main>
 
 <div id="progressModal" class="modal hidden"><div class="modalCard"><div class="modalHead"><h3 id="progressTitle">Procesando localmente</h3><button class="close" id="progressClose">×</button></div><p id="progressMsg" class="small">Preparando…</p><div style="height:8px;background:#161d28;border-radius:20px;overflow:hidden"><div id="progressBar" style="height:100%;width:0;background:linear-gradient(90deg,#7b66ff,#45c5ff)"></div></div></div></div>
-<div id="reportModal" class="modal hidden"><div class="modalCard"><div class="modalHead"><h3>Analizar impresión</h3><button class="close" data-close="reportModal">×</button></div><pre id="report" style="white-space:pre-wrap;color:#cbd4e2;font:13px/1.5 system-ui"></pre></div></div>
+<div id="reportModal" class="modal hidden"><div class="modalCard"><div class="modalHead"><h3>Analizar impresión</h3><button class="close" data-close="reportModal">×</button></div><pre id="report" style="white-space:pre-wrap;color:#cbd4e2;font:13px/1.5 system-ui"></pre><div class="row" style="margin-top:12px"><button class="primary" id="repairAuto">Reparar automáticamente</button><button class="secondary" data-close="reportModal">Cerrar</button></div></div></div>
 <div id="donateModal" class="modal hidden"><div class="modalCard"><div class="modalHead"><h3>Apoyar PartForge 3D</h3><button class="close" data-close="donateModal">×</button></div><div class="donate">El proyecto es gratuito. Puedes apoyar de forma voluntaria. El botón de donación se puede conectar después a la cuenta o enlace que tú elijas.</div></div></div>
 <div id="bootError" class="modal hidden"><div class="modalCard"><h3>PartForge no terminó de cargar</h3><p class="small" id="bootText">Revisa la consola del navegador.</p><button class="secondary" onclick="location.reload()">Recargar</button></div></div>
 <div id="tip" class="tooltip"></div><div class="status"><span id="statusText">Listo.</span><span id="statusProgress"></span></div>
-<script type="module" src="./free.js?v=local-v8"></script>
+<script type="module" src="./free.js?v=local-v9"></script>
 </body>
 </html>
