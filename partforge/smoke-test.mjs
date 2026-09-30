@@ -58,7 +58,7 @@ try {
       const s=document.querySelector("#statusText")?.textContent||"";
       const p=document.querySelector("#progressMsg")?.textContent||"";
       return t.includes("Modelo neural creado localmente") || /No se pudo ejecutar|Error/i.test(t+s+p);
-    }, {timeout:300000});
+    }, undefined, {timeout:300000});
     const genInfo=await page.locator("#genInfo").textContent();
     const status=await page.locator("#statusText").textContent();
     const progress=await page.locator("#progressMsg").textContent();
