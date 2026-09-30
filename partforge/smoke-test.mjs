@@ -45,10 +45,16 @@ try {
   await page.locator("#imageInput").setInputFiles("/tmp/test-object.svg");
   await page.locator("#views img").waitFor({state:"visible", timeout:5000});
   await page.waitForTimeout(200);
+  const hasWebGPU = await page.evaluate(() => !!navigator.gpu);
   await page.locator("#generate").click();
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(hasWebGPU ? 4000 : 1200);
   const genInfo = await page.locator("#genInfo").textContent();
-  if (!genInfo.includes("Modelo local creado")) { const status = await page.locator("#statusText").textContent(); const progress = await page.locator("#progressMsg").textContent(); const imgCount = await page.locator("#views img").count(); throw new Error("La generación local no produjo un modelo: genInfo=" + genInfo + " status=" + status + " progress=" + progress + " imgs=" + imgCount + " errors=" + JSON.stringify(errors)); }
+  if (hasWebGPU) {
+    if (!genInfo.includes("Modelo neural creado localmente")) { const status = await page.locator("#statusText").textContent(); const progress = await page.locator("#progressMsg").textContent(); const imgCount = await page.locator("#views img").count(); throw new Error("El motor neural WebGPU no produjo un modelo: genInfo=" + genInfo + " status=" + status + " progress=" + progress + " imgs=" + imgCount + " errors=" + JSON.stringify(errors)); }
+  } else {
+    const status = await page.locator("#statusText").textContent();
+    if (!/WebGPU|GPU|motor neural/i.test(genInfo + " " + status)) throw new Error("Sin WebGPU, PartForge no mostró un diagnóstico claro del motor neural.");
+  }
 
   await page.getByRole("button", {name:"Editor 3D"}).click();
   await page.locator("#modelInput").setInputFiles("/tmp/test-model.stl");
