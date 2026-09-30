@@ -26,7 +26,7 @@ endfacet
 endsolid test
 `);
 
-const browser = await chromium.launch({headless:true});
+const browser = await chromium.launch({headless:true,args:["--enable-unsafe-webgpu","--use-angle=swiftshader","--disable-gpu-sandbox"]});
 const page = await browser.newPage();
 const errors = [];
 const blockedPaid = [];
