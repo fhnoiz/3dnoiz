@@ -1,14 +1,46 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
-import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
-import { Brush, Evaluator, ADDITION, SUBTRACTION } from 'three-bvh-csg';
-import { zipSync, strToU8 } from 'fflate';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/controls/OrbitControls.js';
+
+const libs = { loaders:{}, exporters:{}, csg:null, zip:null };
+
+async function loadLoader(ext){
+  if(libs.loaders[ext]) return libs.loaders[ext];
+  const urls = {
+    stl:'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/STLLoader.js',
+    obj:'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/OBJLoader.js',
+    ply:'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/PLYLoader.js',
+    glb:'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/GLTFLoader.js',
+    gltf:'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/GLTFLoader.js',
+    '3mf':'https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/loaders/3MFLoader.js'
+  };
+  const mod = await import(urls[ext]);
+  libs.loaders[ext] = mod;
+  return mod;
+}
+
+async function loadExporters(){
+  if(libs.exporters.stl && libs.exporters.obj) return libs.exporters;
+  const [stl,obj] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/exporters/STLExporter.js'),
+    import('https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/exporters/OBJExporter.js')
+  ]);
+  libs.exporters.stl=stl; libs.exporters.obj=obj; return libs.exporters;
+}
+
+async function loadCSG(){
+  if(libs.csg) return libs.csg;
+  const [csg,bvh] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js'),
+    import('https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.15/build/index.module.js')
+  ]);
+  libs.csg={...csg,...bvh}; return libs.csg;
+}
+
+async function loadZip(){
+  if(libs.zip) return libs.zip;
+  libs.zip=await import('https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js');
+  return libs.zip;
+}
 
 const $ = (id) => document.getElementById(id);
 const qsa = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -916,7 +948,7 @@ async function loadModelFromFile(file){
   $('editorName').textContent=file.name; status(`Cargado: ${file.name}`); frameAll();
 }
 
-function parseGLTF(buf){return new Promise((resolve,reject)=>new GLTFLoader().parse(buf,'',g=>resolve(g.scene),reject));}
+async function parseGLTF(buf){ const {GLTFLoader}=await loadLoader('glb'); return new Promise((resolve,reject)=>new GLTFLoader().parse(buf,'',g=>resolve(g.scene),reject)); }
 
 async function loadModelFromUrl(url,name='Modelo'){
   initEditor();
@@ -951,7 +983,7 @@ function countBoundaryEdges(geometry){const idx=geometry.index;const triCount=id
 function countDegenerate(g){const pos=g.attributes.position,idx=g.index;const n=idx?idx.count/3:pos.count/3;let c=0;for(let t=0;t<n;t++){const vs=idx?[idx.getX(t*3),idx.getX(t*3+1),idx.getX(t*3+2)]:[t*3,t*3+1,t*3+2];const a=new THREE.Vector3().fromBufferAttribute(pos,vs[0]),b=new THREE.Vector3().fromBufferAttribute(pos,vs[1]),d=new THREE.Vector3().fromBufferAttribute(pos,vs[2]);if(new THREE.Triangle(a,b,d).getArea()<1e-9)c++;}return c;}
 function openReportModal(report,bad){$('modalReport')?.remove();const modal=document.createElement('div');modal.id='modalReport';modal.className='modal';modal.innerHTML=`<div class="modalCard"><div class="modalHeader"><div><span class="eyebrow">ANÁLISIS</span><h3>Comprobación de impresión</h3></div><button class="iconButton">×</button></div><div class="modalBody"><div class="warningBox">${bad?`Hay ${bad} pieza(s) que requieren revisión.`:'No se detectaron bordes abiertos ni triángulos degenerados en el análisis básico.'}</div><div class="notice" style="margin-top:10px">${report.map(escapeHtml).join('<br>')}</div></div></div>`;document.body.appendChild(modal);modal.querySelector('button').addEventListener('click',()=>modal.remove());}
 
-function createLocalJoint(){
+async function createLocalJoint(){
   if(!state.activePart || state.parts.length<2) return toast('Necesitas al menos dos piezas. Selecciona la pieza donde irá el macho y haz clic sobre la superficie.');
   const openA=countBoundaryEdges(state.activePart.mesh.geometry);
   const otherForCheck=state.parts.find(p=>p!==state.activePart && p.mesh.visible);
@@ -959,6 +991,7 @@ function createLocalJoint(){
   if(!state.lastHit || state.lastHit.mesh!==state.activePart.mesh) return toast('Haz clic sobre la superficie de la pieza activa para fijar el punto del conector.');
   const partner=state.parts.find(p=>p!==state.activePart && p.mesh.visible); if(!partner) return toast('No hay otra pieza visible para crear el alojamiento.');
   const worldPoint=state.lastHit.point.clone(); const worldNormal=faceNormalWorld(state.activePart.mesh,state.lastHit.faceIndex);
+  const {Brush, Evaluator, ADDITION, SUBTRACTION}=await loadCSG();
   const size=Number($('jointSize').value)||4; const depth=Number($('jointDepth').value)||3; const gap=Number($('jointGap').value)||0.15; const type=$('jointType').value;
   if(type==='magnet'){return createMagnetJoint(partner,worldPoint,worldNormal,size,depth,gap);}
   try{
@@ -975,7 +1008,8 @@ function createLocalJoint(){
     state.scene.remove(state.activePart.mesh,partner.mesh); state.activePart.mesh=male; partner.mesh=female; state.scene.add(male,female); refreshPartsList(); frameAll(); toast('Unión creada. Verifica el encaje con “Analizar impresión”.');
   }catch(error){console.error(error);toast(`No se pudo crear la unión: ${error.message||error}`,'error');}
 }
-function createMagnetJoint(partner,point,normal,size,depth,gap){
+async function createMagnetJoint(partner,point,normal,size,depth,gap){
+  const {Brush, Evaluator, SUBTRACTION}=await loadCSG();
   try{
     const activeBrush=new Brush(state.activePart.mesh.geometry.clone()); copyTransform(state.activePart.mesh,activeBrush); activeBrush.updateMatrixWorld(true);
     const partnerBrush=new Brush(partner.mesh.geometry.clone()); copyTransform(partner.mesh,partnerBrush); partnerBrush.updateMatrixWorld(true);
@@ -987,13 +1021,14 @@ function createMagnetJoint(partner,point,normal,size,depth,gap){
 function orientBrush(brush,point,normal,depth){brush.position.copy(point);const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal.clone().normalize());brush.quaternion.copy(q);brush.position.add(normal.clone().normalize().multiplyScalar(depth/2));}
 
 function cloneMeshForExport(mesh){const c=mesh.clone();c.geometry=mesh.geometry.clone();c.material=cloneMaterial(mesh.material);c.position.copy(mesh.position);c.quaternion.copy(mesh.quaternion);c.scale.copy(mesh.scale);c.updateMatrixWorld(true);return c;}
-function exportActive(format){if(!state.activePart)return toast('Selecciona una pieza.');const obj=new THREE.Group();obj.add(cloneMeshForExport(state.activePart.mesh));obj.updateMatrixWorld(true);exportGroup(obj,format,slug(state.activePart.name));}
-function exportAll(format){if(!state.parts.length)return toast('No hay piezas.');const obj=new THREE.Group();state.parts.filter(p=>p.mesh.visible).forEach(p=>obj.add(cloneMeshForExport(p.mesh)));obj.updateMatrixWorld(true);exportGroup(obj,format,'partforge-piezas');}
-function exportGroup(group,format,name){group.updateMatrixWorld(true);try{if(format==='stl'){const data=new STLExporter().parse(group,{binary:true});downloadBlob(new Blob([data],{type:'application/octet-stream'}),name+'.stl');}else if(format==='obj'){const data=new OBJExporter().parse(group);downloadBlob(new Blob([data],{type:'text/plain'}),name+'.obj');}else if(format==='3mf'){export3MF(group,name);}else if(format==='json'){downloadBlob(new Blob([JSON.stringify(projectSnapshot(),null,2)],{type:'application/json'}),name+'.json');}}catch(e){console.error(e);toast(`Exportación falló: ${e.message||e}`,'error');}}
+async function exportActive(format){if(!state.activePart)return toast('Selecciona una pieza.');if(format==='stl'||format==='obj')await loadExporters();const obj=new THREE.Group();obj.add(cloneMeshForExport(state.activePart.mesh));obj.updateMatrixWorld(true);await exportGroup(obj,format,slug(state.activePart.name));}
+async function exportAll(format){if(!state.parts.length)return toast('No hay piezas.');if(format==='stl'||format==='obj')await loadExporters();const obj=new THREE.Group();state.parts.filter(p=>p.mesh.visible).forEach(p=>obj.add(cloneMeshForExport(p.mesh)));obj.updateMatrixWorld(true);await exportGroup(obj,format,'partforge-piezas');}
+async function exportGroup(group,format,name){group.updateMatrixWorld(true);try{if(format==='stl'){const {STLExporter}=libs.exporters.stl;const data=new STLExporter().parse(group,{binary:true});downloadBlob(new Blob([data],{type:'application/octet-stream'}),name+'.stl');}else if(format==='obj'){const {OBJExporter}=libs.exporters.obj;const data=new OBJExporter().parse(group);downloadBlob(new Blob([data],{type:'text/plain'}),name+'.obj');}else if(format==='3mf'){await export3MF(group,name);}else if(format==='json'){downloadBlob(new Blob([JSON.stringify(projectSnapshot(),null,2)],{type:'application/json'}),name+'.json');}}catch(e){console.error(e);toast(`Exportación falló: ${e.message||e}`,'error');}}
 function slug(s){return String(s||'partforge').toLowerCase().replace(/[^a-z0-9áéíóúñ_-]+/gi,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')||'partforge';}
 function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 
-function export3MF(group,name){
+async function export3MF(group,name){
+  const {zipSync,strToU8}=await loadZip();
   const objects=[];const colors=[];
   group.traverse(m=>{if(!m.isMesh||!m.geometry?.attributes?.position)return;const color=getBaseColor(m.material);let c=color;let ci=colors.indexOf(c);if(ci<0){colors.push(c);ci=colors.length-1;}const pos=m.geometry.attributes.position;const idx=m.geometry.index;const verts=[];const tris=[];const vCount=pos.count;for(let i=0;i<vCount;i++){const v=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(m.matrixWorld);verts.push(v);}for(let i=0;i<(idx?idx.count:vCount);i+=3){tris.push([idx?idx.getX(i):i,idx?idx.getX(i+1):i+1,idx?idx.getX(i+2):i+2]);}objects.push({name:m.name||`Pieza ${objects.length+1}`,verts,tris,colorIndex:ci});});
   const matRes=colors.length?`<basematerials id="2">${colors.map((c,i)=>`<base name="c${i}" displaycolor="${c.toUpperCase()}"/>`).join('')}</basematerials>`:'';
