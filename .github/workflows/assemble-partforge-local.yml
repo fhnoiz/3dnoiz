@@ -1,0 +1,52 @@
+name: Assemble PartForge Local
+on:
+  push:
+    paths:
+      - "partforge/_build/READY"
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble compressed local build
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, gzip, shutil
+
+          root = Path("partforge/_build")
+
+          def unpack(src, dst):
+              raw = base64.b64decode((root / src).read_text().strip())
+              (Path("partforge") / dst).write_bytes(gzip.decompress(raw))
+
+          unpack("free.js.gz.b64", "free.js")
+          unpack("index.html.gz.b64", "index.html")
+          unpack("manifest.json.gz.b64", "manifest.json")
+          unpack("README.md.gz.b64", "README.md")
+
+          old = Path("partforge/app.js")
+          if old.exists():
+              old.unlink()
+
+          shutil.rmtree(root)
+
+          # Keep the existing stylesheet for compatibility with older repo assets;
+          # the new Local edition is self-contained in index.html/free.js.
+          PY
+
+      - name: Publish assembled files
+        shell: bash
+        run: |
+          git config user.name "PartForge Local Builder"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add partforge
+          git commit -m "Build PartForge Local Free edition" || exit 0
+          git push
