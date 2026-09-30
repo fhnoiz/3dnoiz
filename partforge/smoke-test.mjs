@@ -52,8 +52,9 @@ try {
 
   await page.getByRole("button", {name:"Editor 3D"}).click();
   await page.locator("#modelInput").setInputFiles("/tmp/test-model.stl");
+  await page.waitForTimeout(1800);
   const meshInfo = await page.locator("#meshInfo").textContent();
-  if (!meshInfo.includes("1 pieza")) throw new Error("STL no se pudo cargar en el editor: " + meshInfo);
+  if (!meshInfo.includes("1 pieza")) { const status = await page.locator("#statusText").textContent(); throw new Error("STL no se pudo cargar en el editor: meshInfo=" + meshInfo + " status=" + status + " errors=" + JSON.stringify(errors)); }
 
   if (!(await page.locator("#viewer canvas").count())) throw new Error("El visor 3D no se inicializó.");
   if (await page.locator("#bootError").isVisible()) throw new Error("PartForge mostró el error de arranque.");
