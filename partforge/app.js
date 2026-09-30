@@ -1075,7 +1075,6 @@ function invertSelection(){
 function escapeText(s){return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
 
 function init(){
-  window.__partforgeBooted=true;
   initTooltips();
   initEvents();
   loadApiSettings();
@@ -1084,6 +1083,7 @@ function init(){
   setEditorTool('object');
   const firstParam = new URLSearchParams(location.search).get('page');
   showPage(['home','image3d','editor'].includes(firstParam) ? firstParam : 'home');
+  window.__partforgeBooted=true;
 }
 
 init();
