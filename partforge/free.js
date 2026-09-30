@@ -25,7 +25,33 @@ function renderPalette(){const b=$("palette");b.innerHTML="";for(const p of S.pa
 function setMode(mode){S.mode=mode;$$(".choice").forEach(x=>x.classList.toggle("active",x.dataset.mode===mode));$("multiBox").classList.toggle("hidden",mode!=="multi");if(mode==="multi"&&!S.palette.length&&S.images.length)analyzePalette();}
 
 function voxelModel(views,n,depth,mode,pal){const occ=new Uint8Array(n*n*n),idx=(x,y,z)=>z*n*n+y*n+x;for(let z=0;z<n;z++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){const u=x/(n-1),v=y/(n-1);let ok=views.f?sample(views.f,u,v):true;if(ok&&views.b)ok=sample(views.b,1-u,v);if(ok&&views.l)ok=sample(views.l,z/(n-1),v);if(ok&&views.r)ok=sample(views.r,1-z/(n-1),v);if(!views.l&&!views.r){const dx=(u-.5)/.48,rad=Math.sqrt(Math.max(0,1-dx*dx));if(Math.abs(z-(n-1)/2)>rad*n*.45)ok=false;}if(ok)occ[idx(x,y,z)]=1}const groups=new Map(),add=(ci,face)=>{if(!groups.has(ci))groups.set(ci,[]);groups.get(ci).push(face)};for(let z=0;z<n;z++)for(let y=0;y<n;y++)for(let x=0;x<n;x++){const id=idx(x,y,z);if(!occ[id])continue;let ci=0;if(mode==="multi"&&pal?.length){const rgb=views.f?sampleColor(views.f,(x+.5)/n,(y+.5)/n):[190,198,210];let bd=1e9;pal.forEach((p,i)=>{const c=hexToRgb(p.hex),dd=(rgb[0]-c[0])**2+(rgb[1]-c[1])**2+(rgb[2]-c[2])**2;if(dd<bd){bd=dd;ci=i}})}const x0=x/n-.5,x1=(x+1)/n-.5,y0=y/n-.5,y1=(y+1)/n-.5,z0=z/n-.5,z1=(z+1)/n-.5;if(x===0||!occ[idx(x-1,y,z)])add(ci,[[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]]);if(x===n-1||!occ[idx(x+1,y,z)])add(ci,[[x1,y0,z1],[x1,y1,z1],[x1,y1,z0],[x1,y0,z0]]);if(y===0||!occ[idx(x,y-1,z)])add(ci,[[x0,y0,z1],[x1,y0,z1],[x1,y0,z0],[x0,y0,z0]]);if(y===n-1||!occ[idx(x,y+1,z)])add(ci,[[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]]);if(z===0||!occ[idx(x,y,z-1)])add(ci,[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0]]);if(z===n-1||!occ[idx(x,y,z+1)])add(ci,[[x0,y0,z1],[x0,y1,z1],[x1,y1,z1],[x1,y0,z1]])}const out=[];for(const [ci,faces] of groups){const pos=[],ind=[];let k=0;for(const f of faces){for(const q of f)pos.push(q[0]*depth,q[1]*depth,q[2]*depth);ind.push(k,k+1,k+2,k,k+2,k+3);k+=4}out.push({positions:new Float32Array(pos),indices:new Uint32Array(ind),color:mode==="multi"&&pal?.[ci]?pal[ci].hex:"#b8c2d1"})}return out}
-async function generate(){if(!S.images.length)return toast("Necesitas al menos una imagen.");modal("progressModal",true);$("progressTitle").textContent="PartForge Local";try{$("progressBar").style.width="10%";const vs=[];for(let i=0;i<S.images.length;i++){vs[i]=foreground(await imageRaster(S.images[i].url));$("progressMsg").textContent="Analizando vista "+(i+1)+" de "+S.images.length;await new Promise(r=>setTimeout(r,10))}$("progressBar").style.width="55%";const n=$("quality").value==="ultra"?46:$("quality").value==="high"?38:30;S.generated=voxelModel({f:vs[0],l:vs[1],b:vs[2],r:vs[3]},n,Math.max(5,+$("heightMm").value||50),S.mode,S.palette.length?S.palette:[{hex:"#b8c2d1",name:"Principal"}]);if(!S.generated.length)throw new Error("No se pudo reconstruir un volumen con estas vistas.");$("progressBar").style.width="100%";$("genInfo").textContent="Modelo local creado: "+S.generated.length+" malla(s).";modal("progressModal",false);toast("Modelo creado sin IA externa.");}catch(err){modal("progressModal",false);$("genInfo").textContent="Error: "+(err?.message||"no se pudo crear.");toast(err?.message||"No se pudo crear el modelo local.","error");}}
+async function generate(){
+  if(!S.images.length)return toast("Necesitas al menos una imagen.");
+  modal("progressModal",true);
+  $("progressTitle").textContent="Motor 3D neural local";
+  $("progressBar").style.width="2%";
+  $("progressMsg").textContent="Preparando WebGPU…";
+  try{
+    const {makeTripoGeometry}=await import("./triposr-webgpu.js?v=1");
+    const primary=S.images[0];
+    if(S.images.length>1){
+      $("progressMsg").textContent="Usando la vista principal. Las vistas adicionales se conservan para la siguiente etapa multi-vista.";
+    }
+    const d=await makeTripoGeometry(primary.url,$("quality").value,(msg)=>{
+      $("progressMsg").textContent=msg;
+      const m=msg.match(/(\\d+)%/);if(m)$("progressBar").style.width=Math.max(2,Math.min(96,+m[1]))+"%";
+    });
+    S.generated=[d];
+    $("progressBar").style.width="100%";
+    $("genInfo").textContent="Modelo neural creado localmente · "+d.engine+" · "+d.positions.length/3|0+" vértices.";
+    modal("progressModal",false);
+    toast("Modelo 3D neural creado en tu equipo, sin API ni IA de pago.");
+  }catch(err){
+    modal("progressModal",false);
+    $("genInfo").textContent="No se pudo ejecutar el motor neural local.";
+    toast(err?.message||"No se pudo generar el modelo neural.","error");
+  }
+}
 function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function ensureThree(){if(S.three)return S.three;try{S.three=await import("three");S.Orbit=(await import("three/addons/controls/OrbitControls.js")).OrbitControls;return S.three}catch(err){throw new Error("No se pudo cargar el motor 3D gratuito. Recarga con Ctrl+F5. Detalle: "+(err?.message||err));}}
 function colorMat(c="#b8c2d1",vertexColors=false){return new S.three.MeshStandardMaterial({color:c,vertexColors,roughness:.56,metalness:.03,side:S.three.DoubleSide})}
