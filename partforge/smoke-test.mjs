@@ -45,10 +45,14 @@ try {
   await page.locator("#imageInput").setInputFiles("/tmp/test-object.svg");
   await page.locator("#views img").waitFor({state:"visible", timeout:5000});
   await page.waitForTimeout(200);
-  const hasWebGPU = await page.evaluate(() => !!navigator.gpu);
+  const gpuState = await page.evaluate(async () => {
+    if (!navigator.gpu) return {hasWebGPU:false,hasAdapter:false};
+    try { const adapter=await navigator.gpu.requestAdapter(); return {hasWebGPU:true,hasAdapter:!!adapter}; }
+    catch { return {hasWebGPU:true,hasAdapter:false}; }
+  });
   await page.locator("#quality").selectOption("normal");
   await page.locator("#generate").click();
-  if (hasWebGPU) {
+  if (gpuState.hasAdapter) {
     await page.waitForFunction(() => {
       const t=document.querySelector("#genInfo")?.textContent||"";
       const s=document.querySelector("#statusText")?.textContent||"";
@@ -62,10 +66,10 @@ try {
       throw new Error("El motor neural WebGPU falló durante la inferencia: genInfo=" + genInfo + " status=" + status + " progress=" + progress + " errors=" + JSON.stringify(errors));
     }
   } else {
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(1500);
     const genInfo = await page.locator("#genInfo").textContent();
     const status = await page.locator("#statusText").textContent();
-    if (!/WebGPU|GPU|motor neural/i.test(genInfo + " " + status)) throw new Error("Sin WebGPU, PartForge no mostró un diagnóstico claro del motor neural.");
+    if (!/WebGPU|GPU|motor neural/i.test(genInfo + " " + status)) throw new Error("El entorno CI no tiene adaptador GPU; PartForge debe mostrar un diagnóstico claro.");
   }
 
   await page.getByRole("button", {name:"Editor 3D"}).click();
