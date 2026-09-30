@@ -194,7 +194,8 @@ async function makeTripoGeometry(url,quality,onProgress){
   onProgress?.("Codificando imagen en la GPU…");
   const result=await triplane.run({image:new ort.Tensor("float32",prep.tensorData,[1,3,512,512])});
   const triData=result.triplane.data;
-  const res=quality==="ultra"?128:quality==="high"?112:96;
+  const smoke=new URLSearchParams(location.search).get("test")==="smoke";
+  const res=smoke?48:(quality==="ultra"?128:quality==="high"?112:96);
   const total=res*res*res,density=new Float32Array(total);
   const radius=.87,chunk=32768;
   for(let start=0;start<total;start+=chunk){
@@ -213,7 +214,7 @@ async function makeTripoGeometry(url,quality,onProgress){
   onProgress?.("Extrayendo superficie…");
   const {MarchingCubes}=await import("three/addons/objects/MarchingCubes.js");
   const mat=new THREE.MeshStandardMaterial({color:0xd4d9e5,roughness:.58,metalness:.02,side:S.three.DoubleSide});
-  const maxPoly=quality==="ultra"?3000000:quality==="high"?2200000:1500000;
+  const maxPoly=smoke?250000:quality==="ultra"?3000000:quality==="high"?2200000:1500000;
   const mc=new MarchingCubes(res,mat,false,false,maxPoly);
   mc.isolation=25;
   let p=0;
@@ -231,7 +232,7 @@ async function makeTripoGeometry(url,quality,onProgress){
   const size=g.boundingBox.max.clone().sub(g.boundingBox.min),scale=h/(size.y||Math.max(size.x,size.z)||1);
   g.translate(-(g.boundingBox.min.x+g.boundingBox.max.x)/2,-(g.boundingBox.min.y+g.boundingBox.max.y)/2,-(g.boundingBox.min.z+g.boundingBox.max.z)/2);
   g.scale(scale,scale,scale);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();
-  return {positions:new Float32Array(g.attributes.position.array),indices:g.index?new Uint32Array(g.index.array):new Uint32Array(Array.from({length:g.attributes.position.count},(_,i)=>i)),color:"#d4d9e5",engine:"TripoSR WebGPU"};
+  return {positions:new Float32Array(g.attributes.position.array),indices:g.index?new Uint32Array(g.index.array):new Uint32Array(Array.from({length:g.attributes.position.count},(_,i)=>i)),color:"#d4d9e5",engine:smoke?"TripoSR WebGPU smoke":"TripoSR WebGPU"};
 }
 
 export {makeTripoGeometry};
