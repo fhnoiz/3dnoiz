@@ -1,0 +1,20 @@
+name: Validate PartForge Local
+on:
+  push:
+    paths:
+      - "partforge/free.js"
+      - "partforge/index.html"
+      - ".github/workflows/validate-partforge.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: node --check partforge/free.js
+      - name: No paid AI API
+        shell: bash
+        run: |
+          ! grep -Eiq 'api\.meshy\.ai|api\.tripo\.ai|/openapi/v1|apiKey[[:space:]]*=' partforge/free.js partforge/index.html
