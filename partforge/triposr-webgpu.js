@@ -28,12 +28,15 @@ async function getOrt(){
 }
 
 async function cachedBytes(url,label,onProgress){
-  const cache=await caches.open(CACHE_NAME);
-  const hit=await cache.match(url);
-  if(hit){
-    onProgress?.(label+" · cache");
-    return new Uint8Array(await hit.arrayBuffer());
-  }
+  let cache=null;
+  try{cache=await caches.open(CACHE_NAME);}catch{}
+  try{
+    const hit=cache?await cache.match(url):null;
+    if(hit){
+      onProgress?.(label+" · cache");
+      return new Uint8Array(await hit.arrayBuffer());
+    }
+  }catch{}
   onProgress?.(label+" · descargando");
   const res=await fetch(url,{mode:"cors"});
   if(!res.ok)throw new Error("No se pudo descargar "+label+" ("+res.status+").");
@@ -41,7 +44,7 @@ async function cachedBytes(url,label,onProgress){
   const reader=res.body?.getReader();
   if(!reader){
     const buf=new Uint8Array(await res.arrayBuffer());
-    await cache.put(url,new Response(buf));
+    try{await cache?.put(url,new Response(buf));}catch{}
     return buf;
   }
   const chunks=[];let loaded=0;
@@ -53,7 +56,7 @@ async function cachedBytes(url,label,onProgress){
   }
   const out=new Uint8Array(loaded);let off=0;
   for(const ch of chunks){out.set(ch,off);off+=ch.length;}
-  await cache.put(url,new Response(out));
+  try{await cache?.put(url,new Response(out));}catch{}
   return out;
 }
 
