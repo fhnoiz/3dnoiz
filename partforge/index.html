@@ -21,6 +21,7 @@
   </script>
 </head>
 <body>
+<div id="bootError" style="display:none;position:fixed;z-index:9999;left:16px;right:16px;bottom:16px;padding:14px 16px;border-radius:12px;background:#2a1014;border:1px solid #8f2c39;color:#ffd9de;font:600 12px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35)"><b>PartForge no terminó de cargar.</b><div data-msg>Revisa la conexión o recarga la página con Ctrl+F5.</div></div>
 <div id="app">
   <header class="topbar">
     <button class="brand" data-page="home" data-tip="Volver al inicio de PartForge 3D">
@@ -221,6 +222,28 @@
 </div>
 
 <div id="toast" class="toast"></div>
+
+<script>
+(function(){
+  var started=Date.now();
+  window.__partforgeBooted=false;
+  window.addEventListener('error',function(e){
+    var msg=(e&&e.message)||'Error de carga';
+    var box=document.getElementById('bootError');
+    if(box){box.style.display='block';box.querySelector('[data-msg]').textContent=msg;}
+  });
+  window.addEventListener('unhandledrejection',function(e){
+    var msg=(e&&e.reason&&e.reason.message)||String(e&&e.reason||'Error no controlado');
+    var box=document.getElementById('bootError');
+    if(box){box.style.display='block';box.querySelector('[data-msg]').textContent=msg;}
+  });
+  setTimeout(function(){
+    if(window.__partforgeBooted)return;
+    var box=document.getElementById('bootError');
+    if(box)box.style.display='block';
+  },7000);
+})();
+</script>
 <script type="module" src="./app.js"></script>
 </body>
 </html>
