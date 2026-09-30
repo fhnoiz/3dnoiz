@@ -1,9 +1,9 @@
 {
-  "name": "PartForge 3D",
+  "name": "PartForge 3D Local Free",
   "short_name": "PartForge",
-  "start_url": "./",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#07090e",
-  "theme_color": "#07090e",
-  "description": "Imagen a 3D, multicolor, separación inteligente, encajes y exportación para impresión 3D."
+  "background_color": "#070a10",
+  "theme_color": "#8d72ff",
+  "lang": "es-CL"
 }
