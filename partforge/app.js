@@ -1040,6 +1040,7 @@ function invertSelection(){
 function escapeText(s){return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
 
 function init(){
+  window.__partforgeBooted=true;
   initTooltips();
   initEvents();
   loadApiSettings();
