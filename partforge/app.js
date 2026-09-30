@@ -998,3 +998,56 @@ function export3MF(group,name){
   group.traverse(m=>{if(!m.isMesh||!m.geometry?.attributes?.position)return;const color=getBaseColor(m.material);let c=color;let ci=colors.indexOf(c);if(ci<0){colors.push(c);ci=colors.length-1;}const pos=m.geometry.attributes.position;const idx=m.geometry.index;const verts=[];const tris=[];const vCount=pos.count;for(let i=0;i<vCount;i++){const v=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(m.matrixWorld);verts.push(v);}for(let i=0;i<(idx?idx.count:vCount);i+=3){tris.push([idx?idx.getX(i):i,idx?idx.getX(i+1):i+1,idx?idx.getX(i+2):i+2]);}objects.push({name:m.name||`Pieza ${objects.length+1}`,verts,tris,colorIndex:ci});});
   const matRes=colors.length?`<basematerials id="2">${colors.map((c,i)=>`<base name="c${i}" displaycolor="${c.toUpperCase()}"/>`).join('')}</basematerials>`:'';
   let ids='';let modelObjects='';const builds=[];objects.forEach((o,i)=>{const id=10+i;modelObjects+=`<object id="${id}" type="model" pid="2" pindex="${o.colorIndex}"><mesh><vertices>${o.verts.map(v=>`<vertex x="${fmt(v.x)}" y="${fmt(v.y)}" z="${fmt(v.z)}"/>`).join('')}</vertices><triangles>${o.tris.map(t=>`<triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join('')}</triangles></mesh></object>`;builds.push(`<item objectid="${id}"/>`);});
+  const xml=`<?xml version="1.0" encoding="UTF-8"?><model unit="millimeter" xml:lang="es-CL" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"><resources>${matRes}${modelObjects}</resources><build>${builds.join('')}</build></model>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>`;
+  const types=`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>`;
+  const zip=zipSync({'[Content_Types].xml':strToU8(types),'_rels/.rels':strToU8(rels),'3D/3dmodel.model':strToU8(xml)},{level:6});
+  downloadBlob(new Blob([zip],{type:'application/vnd.ms-package.3dmanufacturing-3dmodel+xml'}),name+'.3mf');
+}
+function fmt(n){return Number(n.toFixed(5));}
+
+function projectSnapshot(){return {app:'PartForge 3D',version:'1.1.0',savedAt:new Date().toISOString(),page:state.page,colorMode:state.colorMode,palette:state.palette,parts:state.parts.map(p=>({name:p.name,triangles:triCount(p.mesh)})),aiGenerationTask:state.aiGenerationTask,aiSplitTask:state.aiSplitTask,settings:{brushSize:$('brushSize').value,smartAngle:$('smartAngle').value,colorTolerance:$('colorTolerance').value,sealCut:$('sealCut').checked}};}
+
+function downloadCurrent3MF(){if(!state.current3mfUrl)return toast('Todavía no hay un 3MF AI disponible.');const a=document.createElement('a');a.href=state.current3mfUrl;a.target='_blank';a.rel='noopener';a.click();}
+
+function initEvents(){
+  qsa('[data-page]').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.mode)selectColorMode(btn.dataset.mode);showPage(btn.dataset.page);}));
+  $('btnApi').addEventListener('click',openApiModal);$('btnApiSide').addEventListener('click',openApiModal);$('btnSaveApi').addEventListener('click',saveApiSettings);
+  qsa('[data-close-modal]').forEach(btn=>btn.addEventListener('click',()=>hideModal(btn.dataset.closeModal)));
+  $('btnAddImages').addEventListener('click',()=>$('imageInput').click());$('imageInput').addEventListener('change',e=>addImages(e.target.files));$('btnClearImages').addEventListener('click',()=>{state.images=[];state.palette=[];renderViewGrid();renderPalette();});
+  qsa('[data-color-mode]').forEach(btn=>btn.addEventListener('click',()=>selectColorMode(btn.dataset.colorMode)));$('btnAnalyzePalette').addEventListener('click',analyzePalette);$('btnAddColor').addEventListener('click',()=>{state.palette.push({name:'color',hex:'#999999'});renderPalette();});$('maxColors').addEventListener('change',()=>{if(state.images.length)analyzePalette();});$('btnGenerate3D').addEventListener('click',generate3DFromImages);
+  $('btnGlobalLoad').addEventListener('click',()=>{showPage('editor');initEditor();$('modelInput').click();});$('btnEditorLoad').addEventListener('click',()=>$('modelInput').click());$('modelInput').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)loadModelFromFile(f).catch(e=>toast(e.message||'No se pudo cargar el modelo.','error'));});
+  qsa('[data-tool]').forEach(btn=>btn.addEventListener('click',()=>setEditorTool(btn.dataset.tool)));
+  $('brushSize').addEventListener('input',e=>$('brushSizeOut').textContent=e.target.value);$('smartAngle').addEventListener('input',e=>$('smartAngleOut').textContent=e.target.value+'°');$('colorTolerance').addEventListener('input',e=>$('colorToleranceOut').textContent=e.target.value);
+  $('btnAddSelection').addEventListener('click',()=>{state.selectionAddMode='add';toast('Modo Añadir activo: las nuevas selecciones se sumarán.');});$('btnSubSelection').addEventListener('click',()=>{state.selectionAddMode='subtract';toast('Modo Quitar activo: las nuevas selecciones se restarán.');});$('btnClearSelection').addEventListener('click',()=>{state.selection.clear();state.selectionAddMode='replace';refreshSelectionHighlight();updateSelectionUI();toast('Selección limpiada.');});$('btnInvertSelection').addEventListener('click',invertSelection);
+  $('btnDetachSelection').addEventListener('click',detachSelected);$('btnSeparateAI').addEventListener('click',runAISplit);$('btnJoint').addEventListener('click',createLocalJoint);$('btnRepairCheck').addEventListener('click',analyzePrintability);
+  $('activeName').addEventListener('change',()=>{if(state.activePart){state.activePart.name=$('activeName').value.trim()||state.activePart.name;state.activePart.mesh.name=state.activePart.name;refreshPartsList();}});
+  $('btnSolo').addEventListener('click',soloActive);$('btnHide').addEventListener('click',hideActive);$('btnDup').addEventListener('click',duplicateActive);$('btnDeletePart').addEventListener('click',deleteActive);
+  $('viewFront').addEventListener('click',()=>view('front'));$('viewTop').addEventListener('click',()=>view('top'));$('viewSide').addEventListener('click',()=>view('side'));$('viewFrame').addEventListener('click',frameAll);$('viewWire').addEventListener('click',toggleWire);$('viewXray').addEventListener('click',toggleXray);
+  $('exportSTL').addEventListener('click',()=>exportActive('stl'));$('exportOBJ').addEventListener('click',()=>exportActive('obj'));$('export3MF').addEventListener('click',()=>state.current3mfUrl?downloadCurrent3MF():exportAll('3mf'));$('exportProject').addEventListener('click',()=>downloadBlob(new Blob([JSON.stringify(projectSnapshot(),null,2)],{type:'application/json'}),'partforge-proyecto.json'));$('exportAll').addEventListener('click',()=>exportAll('3mf'));$('btnEditorExport').addEventListener('click',()=>exportAll('3mf'));
+  $('btnCancelAI').addEventListener('click',()=>{state.aiStop=true;hideModal('aiProgressModal');});
+  window.addEventListener('resize',resizeRenderer);
+  window.addEventListener('dragover',e=>{e.preventDefault(); if(state.page==='editor')$('viewerDrop').classList.add('show');});
+  window.addEventListener('drop',async e=>{e.preventDefault();$('viewerDrop').classList.remove('show');const files=[...e.dataTransfer.files];const model=files.find(f=>/\.(stl|obj|ply|glb|gltf|3mf)$/i.test(f.name));if(model){showPage('editor');try{await loadModelFromFile(model);}catch(err){toast(err.message||'No se pudo cargar.','error');}}else if(files.some(f=>f.type.startsWith('image/'))){showPage('image3d');await addImages(files.filter(f=>f.type.startsWith('image/')));}});
+  document.addEventListener('pointerdown',e=>{if(e.target.closest('#apiModal')===null && e.target.closest('#aiProgressModal')===null){} });
+}
+
+function invertSelection(){
+  if(!state.activePart) return;
+  const mesh=state.activePart.mesh;const all=new Set(faceIndices(mesh));const current=new Set(state.selection.get(mesh.uuid)||[]);const inv=new Set([...all].filter(x=>!current.has(x)));state.selectionAddMode='replace';applyFaceSelection(mesh,inv,'replace');
+}
+
+function escapeText(s){return String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+
+function init(){
+  initTooltips();
+  initEvents();
+  loadApiSettings();
+  renderViewGrid();
+  renderPalette();
+  setEditorTool('object');
+  const firstParam = new URLSearchParams(location.search).get('page');
+  showPage(['home','image3d','editor'].includes(firstParam) ? firstParam : 'home');
+}
+
+init();
