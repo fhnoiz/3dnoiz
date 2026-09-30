@@ -1,3 +1,4 @@
+import * as THREE from "three";
 const ORT_URL="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.30.0/dist/esm/ort.webgpu.min.js";
 const MODEL_BASE="https://huggingface.co/cgb/triposr-onnx-webgpu/resolve/main";
 const CACHE_NAME="partforge-triposr-q8-v1";
@@ -193,7 +194,7 @@ async function makeTripoGeometry(url,quality,onProgress){
   }
   onProgress?.("Extrayendo superficie…");
   const {MarchingCubes}=await import("three/addons/objects/MarchingCubes.js");
-  const mat=new S.three.MeshStandardMaterial({color:0xd4d9e5,roughness:.58,metalness:.02,side:S.three.DoubleSide});
+  const mat=new THREE.MeshStandardMaterial({color:0xd4d9e5,roughness:.58,metalness:.02,side:S.three.DoubleSide});
   const maxPoly=quality==="ultra"?3000000:quality==="high"?2200000:1500000;
   const mc=new MarchingCubes(res,mat,false,false,maxPoly);
   mc.isolation=25;
