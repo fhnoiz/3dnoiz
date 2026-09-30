@@ -12,9 +12,96 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Syntax
         run: node --check partforge/free.js
+
       - name: No paid AI APIs
         shell: bash
         run: |
           ! grep -Eiq 'api\.meshy\.ai|api\.tripo\.ai|/openapi/v1|apiKey[[:space:]]*=' partforge/free.js partforge/index.html
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Browser smoke test
+        shell: bash
+        run: |
+          cat > /tmp/partforge-smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          fs.writeFileSync('/tmp/test-object.svg', `
+          <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240">
+            <rect width="240" height="240" fill="white"/>
+            <circle cx="120" cy="120" r="72" fill="#d24a4a"/>
+            <rect x="105" y="52" width="30" height="38" rx="8" fill="#222"/>
+          </svg>`);
+
+          fs.writeFileSync('/tmp/test-model.stl', `solid test
+          facet normal 0 0 1
+            outer loop
+              vertex 0 0 0
+              vertex 20 0 0
+              vertex 0 20 0
+            endloop
+          endfacet
+          facet normal 0 0 1
+            outer loop
+              vertex 20 0 0
+              vertex 20 20 0
+              vertex 0 20 0
+            endloop
+          endfacet
+          endsolid test
+          `);
+
+          const browser = await chromium.launch({headless:true});
+          const page = await browser.newPage();
+          const errors = [];
+          const blockedPaid = [];
+          page.on('pageerror', e => errors.push(String(e)));
+          page.on('console', m => { if(m.type() === 'error') errors.push(m.text()); });
+          page.on('request', req => {
+            const u = req.url().toLowerCase();
+            if (u.includes('api.meshy.ai') || u.includes('api.tripo.ai') || u.includes('/openapi/v1')) blockedPaid.push(u);
+          });
+
+          await page.goto('http://127.0.0.1:4173/partforge/?test=smoke', {waitUntil:'networkidle', timeout:30000});
+          await page.locator('#bootError').waitFor({state:'hidden', timeout:10000});
+
+          await page.getByRole('button', {name:'Imagen → 3D'}).click();
+          await page.locator('#imageInput').setInputFiles('/tmp/test-object.svg');
+          await page.locator('#generate').click();
+          await page.locator('#genInfo').waitFor({state:'visible', timeout:15000});
+          const genText = await page.locator('#genInfo').textContent();
+          if (!genText.includes('Modelo local creado')) throw new Error('La generación local no produjo un modelo.');
+
+          await page.getByRole('button', {name:'Editor 3D'}).click();
+          await page.locator('#modelInput').setInputFiles('/tmp/test-model.stl');
+          await page.locator('#meshInfo').waitFor({state:'visible', timeout:15000});
+          const meshText = await page.locator('#meshInfo').textContent();
+          if (!meshText.includes('1 pieza')) throw new Error('STL no se pudo cargar en el editor.');
+
+          const canvasCount = await page.locator('#viewer canvas').count();
+          if (!canvasCount) throw new Error('El visor 3D no se inicializó.');
+
+          const bootVisible = await page.locator('#bootError').isVisible();
+          if (bootVisible) throw new Error('PartForge mostró el error de arranque.');
+
+          if (blockedPaid.length) throw new Error('Se detectó una llamada a un servicio de IA de pago: ' + blockedPaid[0]);
+          if (errors.some(x => /Failed to resolve module specifier "three"|Cannot read properties of undefined \(reading '0'\)/.test(x))) {
+            throw new Error('Se detectó uno de los errores reportados por el usuario: ' + errors.join(' | '));
+          }
+
+          console.log(JSON.stringify({generation:genText, editor:meshText, errors, blockedPaid}));
+          await browser.close();
+          EOF
+
+          python3 -m http.server 4173 --directory . >/tmp/partforge-http.log 2>&1 &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID" EXIT
+          node /tmp/partforge-smoke.mjs
